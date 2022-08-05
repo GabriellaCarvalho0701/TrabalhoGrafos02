@@ -10,8 +10,8 @@ using std::cout;
 using std::endl;
 using std::string;
 
-#include "./Edge/edge.cpp"
-#include "./Graph/graph.cpp"
+#include "./Edge/Edge.cpp"
+#include "./Graph/Graph.cpp"
 #include "./Node/node.cpp"
 
 /*
@@ -325,38 +325,10 @@ void processOperationChoice(char *argv[], bool hasWeightedNode, bool hasWeighted
  *          argv: argumentos
  * @return:
  ****************************************************************/
-int main(int argc, char *argv[]) {
-    FILE *file;
-
-    string dirPath = "./EntryFiles/InstanciasTurmaGrafos";
-
-    if (argc < 4) {
-        //  NOME ENTRADA ?, NOME SAIDA, DIRECIONADO ?, PESO EDGE ?, PESO NODE ?
-        cout << "Os argumentos de excecucao sao invalidos. Os argumentos devem seguir o padrao: " << endl;
-        cout << "ARQUIVO DE ENTRADA | ARQUIVO DE SAIDA | TIPO DAS INSTANCIAS" << endl;
-        return 0;
-    }
-
-    string fileName = argv[1];
-
-    string path = string(dirPath) + "/" + string(fileName);
-    file = fopen(path.c_str(), "rt");
-
-    if (file == NULL)
-        perror("Erro ao abrir o arquivo");
-
-    if (*argv[3] == '1') {
-        instanceTypeOneRead(file);
-    } else if (*argv[3] == '2') {
-        // instanceTypeTwoRead(file);
-    } else {
-        cout << "Tipo de instancia informado: " << *argv[3] << "invalido! " << endl;
-        exit(1);
-    }
-
-    // Graph *graph = graphReadAndInstantiation(file, instanceTypeHandover);
-
-    // processOperationChoice(argv, hasWeightedEdge, hasWeightedNode, isDirected, graph);
-
+int main(int argc, char *argv[])
+{
+    // apaguei monte de coisa aqui no intuito de simplificar
+    auto *graph = new Graph(argc, argv);
+    graph->leituraArquivo();
     return 0;
 }

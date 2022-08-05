@@ -6,6 +6,10 @@
 #include <stack>
 #include <unordered_set>
 #include <vector>
+#include <string>
+#include <fstream>
+#include <memory>
+#include <sstream>
 
 using std::cout;
 using std::endl;
@@ -21,11 +25,23 @@ using std::vector;
 
 using std::string;
 
-Graph::Graph(int quantityNodes, int inferiorLimit, int upperLimit) {
+Graph::Graph(size_t argc, char **argv)
+        : nodesTotal(0), edgesTotal(0), firstNode(nullptr), isDirected(false), hasWeightedEdges(true), hasWeightedNodes(true), inferiorLimit(-1), upperLimit(-1), distanceMatrix(nullptr),
+          pathArquivoEntrada(static_cast<string>(argv[1])), pathArquivoSaida(static_cast<string>(argv[2])), tipoInstancia(static_cast<int>(atoi(argv[3])))
+{
+    if (argc != 4)
+    {
+        std::cerr << "[ERRO] parametros do programa incorretos\nEsperado: ./execGrupoX_ <arquivo_entrada> <arquivo_saida> <Tipo_Instancia>\n";
+        exit(-1);
+    }
+}
+
+Graph::Graph(int quantityNodes, int inferiorLimit, int upperLimit) :tipoInstancia(-1) // necessario
+{
     this->firstNode = nullptr;
     this->nodesTotal = 0;
     this->edgesTotal = 0;
-    this->directed = 0;
+    this->isDirected = 0;
     this->hasWeightedEdges = 1;
     this->hasWeightedNodes = 1;
     this->inferiorLimit = inferiorLimit;
@@ -34,11 +50,12 @@ Graph::Graph(int quantityNodes, int inferiorLimit, int upperLimit) {
     setDistanceMatrix();
 }
 
-Graph::Graph(int quantityNodes) {
+Graph::Graph(int quantityNodes) :tipoInstancia(-1)
+{
     this->firstNode = nullptr;
     this->nodesTotal = 0;
     this->edgesTotal = 0;
-    this->directed = 0;
+    this->isDirected = 0;
     this->hasWeightedEdges = 1;
     this->hasWeightedNodes = 1;
 
@@ -77,8 +94,9 @@ bool Graph::isNodeWeighted() {
     return hasWeightedNodes;
 }
 
-bool Graph::getDirected() {
-    return directed;
+bool Graph::getDirected()
+{
+    return isDirected;
 }
 
 void Graph::setDistanceMatrix() {
@@ -563,3 +581,143 @@ void mergeSort(vector<Edge*>& vetor, int start, int end) {
         mergeSortedIntervals(vetor, start, mid, end);
     }
 }
+
+
+std::streampos inline tamanhoArquivo(fstream &arq)
+{
+    arq.seekg(0, std::fstream::end);
+    std::streampos tam = arq.tellg();
+    arq.seekg(0);
+    return tam;
+}
+
+void Graph::leituraArquivo()
+{
+    fstream arquivoEntrada(static_cast<string>(this->pathArquivoEntrada), std::ios::in);
+    if (!arquivoEntrada.is_open())
+    {
+        std::cerr << "\n\t[ERRO] arquivo nao pode ser aberto lerArquivo";
+        exit(10);
+    }
+
+    auto bufferSize = tamanhoArquivo(arquivoEntrada);
+    std::unique_ptr<char[]> buffer(new char[bufferSize]);
+    arquivoEntrada.read(buffer.get(), bufferSize);
+    arquivoEntrada.close();
+    std::stringstream fileIn(buffer.get()); // os dados estao aqui
+
+    if (this->tipoInstancia == 1)
+    {
+        this->leituraRanRealeSparse(fileIn);
+    }
+    else if (this->tipoInstancia == 2)
+    {
+        this->leituraHandover(fileIn);
+    }
+    else
+    {
+        std::cerr << "\n[ERRO] tipo de instancia nao reconhecido\n(1)RanReal ou Sparse\n(2)Handover\n";
+        exit(-1);
+    }
+}
+
+void Graph::leituraRanRealeSparse(std::stringstream &fileIn)
+{
+    string primeiraLinha;
+    getline(fileIn, primeiraLinha);
+
+    processaPrimeiraLinhaRanRealSparse(primeiraLinha); // resgata informacoes basicas do grafo
+
+    // processo restante das arestas
+    string linha;
+    int verticeFonte = 0, verticeAlvo = 0;
+    float beneficio = 0;
+    while (!fileIn.eof())
+    {
+        getline(fileIn, linha, ' ');
+        verticeFonte = stoi(linha);
+
+        getline(fileIn, linha, ' ');
+        verticeAlvo = stoi(linha);
+
+        getline(fileIn, linha, '\n');
+        beneficio = stof(linha);
+
+        // stenio cria uma matriz distancia ??
+        this->createEdge(getNodeIfExist(verticeFonte), getNodeIfExist(verticeAlvo), beneficio); // TODO: mudar parametro para float
+    }
+}
+
+
+void Graph::processaPrimeiraLinhaRanRealSparse(const string &linha)
+{
+    // divide a linha em palavras para ser possível separar os dados
+    std::stringstream ss(linha);
+    string item;
+    vector<string> tokens;
+    while (getline(ss, item, ' '))
+    {
+        tokens.push_back(item);
+    }
+    // pega o basico
+    int quantidadeNos = stoi(tokens[0]);
+    this->nodesTotal = quantidadeNos;
+    int quantidadeClusters = stoi(tokens[1]);
+    this->quantidadeClusters = quantidadeClusters;
+    string clusterType = tokens[2]; // ds ou ss
+    this->clusterType = clusterType; // TODO: nao parece ser realmente util, visto que todos sao ds e nao usa-se essa informacao mais?!
+
+    // TODO: visto que stenio nao usa essa informacao e nao parece ser util guardar o limite de cada cluster
+    // get limites dos clusters
+    vector<pair<int, int>> clustersLimites; //clustersLimites[i] = (limiteInferior, limiteSuperior)
+    for (int i = 0; i < quantidadeClusters; i++)
+    {
+        int clusterId = stoi(tokens[3 + i * 2]);
+        int clusterLimite = stoi(tokens[4 + i * 2]);
+        clustersLimites.emplace_back(clusterId, clusterLimite);
+    }
+
+    // get node weights
+    // vector<int> nodeWeights;
+    int contVertices = 0;
+    for (int i = 0; i < quantidadeNos; i++)
+    {
+        float nodeWeight = stof(tokens[4 + quantidadeClusters * 2 + i]);
+        // nodeWeights.push_back(nodeWeight);
+        this->createNodeIfDoesntExist(i, nodeWeight); // TODO: mudar parametro para float
+        ++contVertices;
+    }
+
+
+}
+
+void Graph::leituraHandover(std::stringstream &fileIn)
+{
+    string linha;
+    getline(fileIn, linha, '\n');
+    int quantidadeNos = stoi(linha);
+
+    getline(fileIn, linha, '\n');
+    int quantidadeClusters = stoi(linha);
+
+    getline(fileIn, linha, '\n');
+    float upperLimit = stof(linha); // todos tem os mesmos limites
+    float lowerLimit = 0.0f;
+
+    for (int i = 0; i < quantidadeNos; ++i)
+    {
+        getline(fileIn, linha);
+        float beneficio = stof(linha);
+        // inserir no vertice i com tal beneficio
+    }
+
+    getline(fileIn, linha, '\n');
+    for (int i = 0; i < quantidadeNos; ++i)
+    {
+        for (int j = 0; j < quantidadeNos; ++j)
+        {
+            // linha >> grafo->matrizDistancia[i][j];
+        }
+    }
+}
+

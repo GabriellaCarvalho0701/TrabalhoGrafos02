@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "../Graph/graph.h"
+#include "../Graph/Graph.h"
 #include "../Node/node.h"
 
 class Graph;
@@ -11,7 +11,7 @@ class Node;
 class Edge {
     public: 
         Edge(Node *headNode, Node *tailNode, int weight, Graph *graph); 
-        ~Edge();   
+        ~Edge() = default;
 
         void setNextEdge(Edge* nextEdge);
         Edge* getNextEdge();

@@ -6,7 +6,7 @@
 #include <queue>
 #include <vector>
 
-#include "../Edge/edge.h"
+#include "../Edge/Edge.h"
 #include "../Node/node.h"
 
 using std::list;
@@ -21,9 +21,15 @@ class Edge;
 
 class Graph {
    public:
-    Graph(int quantityNodes, int inferiorLimit, int upperLimit);
+    Graph(size_t argc, char **argv);
+
     Graph(int quantityNodes);
-    ~Graph();
+
+    Graph(int quantityNodes, int inferiorLimit, int upperLimit);
+
+    ~Graph() = default;
+
+
 
     void addCounterOfNodes();
     int getCounterOfNodes();
@@ -70,17 +76,33 @@ class Graph {
     void setDistanceMatrix();
     void setDistanceMatrix(int nodeHead, int nodeTail, int weight);
 
-   private:
+    void leituraArquivo();
+
+private:
     Node *firstNode;
     int nodesTotal;
     int edgesTotal;
     int inferiorLimit;
     int upperLimit;
     bool hasWeightedEdges;
-    bool directed;
+    bool isDirected;
     bool hasWeightedNodes;
     vector<Edge *> vectorOfEdges;
     float **distanceMatrix;
+
+    // por daniel, para leitura do arquivo
+    int quantidadeClusters;
+    string clusterType;
+
+    const string pathArquivoEntrada;
+    const string pathArquivoSaida;
+    const int tipoInstancia;
+
+    // std::vector<std::pair<int,float>> vertices; // nao entendi pq stenio amazena dessa forma
+
+    void processaPrimeiraLinhaRanRealSparse(const string &linha);
+    void leituraRanRealeSparse(std::stringstream &fileIn);
+    void leituraHandover(std::stringstream &fileIn);
 };
 
 #endif

@@ -5,8 +5,8 @@
 #include <vector>
 
 
-#include "../Edge/edge.h"
-#include "../Graph/graph.h"
+#include "../Edge/Edge.h"
+#include "../Graph/Graph.h"
 
 using std::vector;
 
