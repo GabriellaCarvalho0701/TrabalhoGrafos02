@@ -18,7 +18,6 @@ using std::vector;
 
 class Node;
 class Edge;
-
 class Graph {
    public:
     Graph(size_t argc, char **argv);
@@ -49,7 +48,7 @@ class Graph {
     Node *getNodePkId(int id);
 
     Node *createNodeIfDoesntExist(int id, int peso);
-    Edge *createEdge(Node *nodeHead, Node *tailNode, int weight);
+    Edge *createEdge(Node *nodeHead, Node *nodeTail, float weight);
 
     void outputGraph(string outputFileName);
     void outputNodes(string outputFileName, Node *nodes[], int cont, string textStart);

@@ -1,4 +1,4 @@
-#include "graph.h"
+#include "Graph.h"
 
 #include <iostream>
 #include <list>
@@ -606,11 +606,11 @@ void Graph::leituraArquivo()
     arquivoEntrada.close();
     std::stringstream fileIn(buffer.get()); // os dados estao aqui
 
-    if (this->tipoInstancia == 1)
+    if (this->tipoInstancia == 1) // RanReal e Sparse
     {
         this->leituraRanRealeSparse(fileIn);
     }
-    else if (this->tipoInstancia == 2)
+    else if (this->tipoInstancia == 2) // Handover
     {
         this->leituraHandover(fileIn);
     }
@@ -632,9 +632,9 @@ void Graph::leituraRanRealeSparse(std::stringstream &fileIn)
     string linha;
     int verticeFonte = 0, verticeAlvo = 0;
     float beneficio = 0;
-    while (!fileIn.eof())
+    while (getline(fileIn, linha, ' ') && linha !="")
     {
-        getline(fileIn, linha, ' ');
+//        getline(fileIn, linha, ' ');
         verticeFonte = stoi(linha);
 
         getline(fileIn, linha, ' ');
@@ -659,13 +659,10 @@ void Graph::processaPrimeiraLinhaRanRealSparse(const string &linha)
     {
         tokens.push_back(item);
     }
-    // pega o basico
-    int quantidadeNos = stoi(tokens[0]);
-    this->nodesTotal = quantidadeNos;
-    int quantidadeClusters = stoi(tokens[1]);
-    this->quantidadeClusters = quantidadeClusters;
-    string clusterType = tokens[2]; // ds ou ss
-    this->clusterType = clusterType; // TODO: nao parece ser realmente util, visto que todos sao ds e nao usa-se essa informacao mais?!
+    // informacoes basicas do grafo
+    this->nodesTotal = stoi(tokens[0]);
+    this->quantidadeClusters = stoi(tokens[1]);
+    this->clusterType =  tokens[2]; //  ds ou ss TODO: nao parece ser realmente util, visto que todos sao ds e nao usa-se essa informacao mais?!
 
     // TODO: visto que stenio nao usa essa informacao e nao parece ser util guardar o limite de cada cluster
     // get limites dos clusters
@@ -680,9 +677,9 @@ void Graph::processaPrimeiraLinhaRanRealSparse(const string &linha)
     // get node weights
     // vector<int> nodeWeights;
     int contVertices = 0;
-    for (int i = 0; i < quantidadeNos; i++)
+    for (int i = 0; i < this->nodesTotal; i++)
     {
-        float nodeWeight = stof(tokens[4 + quantidadeClusters * 2 + i]);
+        int nodeWeight = stoi(tokens[4 + quantidadeClusters * 2 + i]);
         // nodeWeights.push_back(nodeWeight);
         this->createNodeIfDoesntExist(i, nodeWeight); // TODO: mudar parametro para float
         ++contVertices;
