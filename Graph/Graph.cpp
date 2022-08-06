@@ -723,16 +723,6 @@ void Graph::leituraHandover(std::stringstream &fileIn)
     }
     // imprimeMatrizParaDebug(matrizAdjacencia);
 
-    for (int i = 0; i < quantidadeNos; ++i)
-    {
-        for (int j = i; j < quantidadeNos; ++j)
-        {
-            if (matrizAdjacencia[i][j] != 0)
-            {
-                this->createEdge(this->getNodeIfExist(i), this->getNodeIfExist(j), matrizAdjacencia[i][j]);
-            }
-        }
-    }
 
 }
 
