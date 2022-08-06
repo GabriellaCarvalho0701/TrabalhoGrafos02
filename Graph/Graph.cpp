@@ -684,8 +684,6 @@ void Graph::processaPrimeiraLinhaRanRealSparse(const string &linha)
         this->createNodeIfDoesntExist(i, nodeWeight); // TODO: mudar parametro para float
         ++contVertices;
     }
-
-
 }
 
 void Graph::leituraHandover(std::stringstream &fileIn)
@@ -712,16 +710,43 @@ void Graph::leituraHandover(std::stringstream &fileIn)
         this->createNodeIfDoesntExist(i, stof(linha));
     }
 
-    // ???????????????
-    std::stringstream stream;
-    getline(fileIn, linha, '\n');
-    stream << linha;
+    std::vector<std::vector<int>> matrizAdjacencia;
     for (int i = 0; i < quantidadeNos; ++i)
     {
+        std::vector<int> aux;
         for (int j = 0; j < quantidadeNos; ++j)
         {
-            stream >> this->distanceMatrix[i][j]; // ?????????????????????
+            getline(fileIn, linha, ' ');
+            aux.push_back(stoi(linha));
         }
+        matrizAdjacencia.push_back(aux);
+    }
+    // imprimeMatrizParaDebug(matrizAdjacencia);
+
+    for (int i = 0; i < quantidadeNos; ++i)
+    {
+        for (int j = i; j < quantidadeNos; ++j)
+        {
+            if (matrizAdjacencia[i][j] != 0)
+            {
+                this->createEdge(this->getNodeIfExist(i), this->getNodeIfExist(j), matrizAdjacencia[i][j]);
+            }
+        }
+    }
+
+}
+
+void Graph::imprimeMatrizParaDebug(vector<vector<int>> matriz)
+{
+    std::unitbuf(cout);
+    cout << "matriz =\n";
+    for (int i = 0; i < matriz.size(); ++i)
+    {
+        for (int j = 0; j < matriz[i].size(); ++j)
+        {
+            cout << matriz[i][j] << " ";
+        }
+        cout << "\n";
     }
 }
 

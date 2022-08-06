@@ -82,7 +82,7 @@ private:
     int nodesTotal;
     int edgesTotal;
     float inferiorLimit;
-    flaot upperLimit;
+    float upperLimit;
     bool hasWeightedEdges;
     bool isDirected;
     bool hasWeightedNodes;
@@ -102,6 +102,8 @@ private:
     void processaPrimeiraLinhaRanRealSparse(const string &linha);
     void leituraRanRealeSparse(std::stringstream &fileIn);
     void leituraHandover(std::stringstream &fileIn);
+
+    void imprimeMatrizParaDebug(vector<vector<int>> matriz);
 };
 
 #endif
