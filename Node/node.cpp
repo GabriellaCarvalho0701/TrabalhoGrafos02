@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-Node::Node(int id, int weight, Graph *graph) {
+Node::Node(int id, float weight, Graph *graph) {
     this->id = id;
     this->weight = weight;
 

@@ -47,7 +47,7 @@ class Graph {
     Node *getNodeIfExist(int id);
     Node *getNodePkId(int id);
 
-    Node *createNodeIfDoesntExist(int id, int peso);
+    Node *createNodeIfDoesntExist(int id, float weight);
     Edge *createEdge(Node *nodeHead, Node *nodeTail, float weight);
 
     void outputGraph(string outputFileName);
@@ -81,8 +81,8 @@ private:
     Node *firstNode;
     int nodesTotal;
     int edgesTotal;
-    int inferiorLimit;
-    int upperLimit;
+    float inferiorLimit;
+    flaot upperLimit;
     bool hasWeightedEdges;
     bool isDirected;
     bool hasWeightedNodes;

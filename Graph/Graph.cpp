@@ -632,7 +632,7 @@ void Graph::leituraRanRealeSparse(std::stringstream &fileIn)
     string linha;
     int verticeFonte = 0, verticeAlvo = 0;
     float beneficio = 0;
-    while (getline(fileIn, linha, ' ') && linha !="")
+    while (getline(fileIn, linha, ' ') && !linha.empty())
     {
 //        getline(fileIn, linha, ' ');
         verticeFonte = stoi(linha);
@@ -675,11 +675,11 @@ void Graph::processaPrimeiraLinhaRanRealSparse(const string &linha)
     }
 
     // get node weights
-    // vector<int> nodeWeights;
     int contVertices = 0;
-    for (int i = 0; i < this->nodesTotal; i++)
+    auto nodesTotalOriginal = this->nodesTotal; // bug-prone: this->nodesTotal esta sendo atualizado ao criar os nos
+    for (int i = 0; i < nodesTotalOriginal; i++)
     {
-        int nodeWeight = stoi(tokens[4 + quantidadeClusters * 2 + i]);
+        float nodeWeight = stof(tokens[4 + quantidadeClusters * 2 + i]);
         // nodeWeights.push_back(nodeWeight);
         this->createNodeIfDoesntExist(i, nodeWeight); // TODO: mudar parametro para float
         ++contVertices;
@@ -695,25 +695,32 @@ void Graph::leituraHandover(std::stringstream &fileIn)
     int quantidadeNos = stoi(linha);
 
     getline(fileIn, linha, '\n');
-    int quantidadeClusters = stoi(linha);
+    this->quantidadeClusters = stoi(linha);
 
     getline(fileIn, linha, '\n');
-    float upperLimit = stof(linha); // todos tem os mesmos limites
-    float lowerLimit = 0.0f;
+    this->upperLimit = stof(linha); // todos tem os mesmos limites
+    this->inferiorLimit = 0.0f; // sempre 0.0f
+
+    for (int i = 0; i < this->quantidadeClusters; ++i)
+    {
+//        this->inserirCluster(this->inferiorLimit,this->upperLimit);
+    }
 
     for (int i = 0; i < quantidadeNos; ++i)
     {
-        getline(fileIn, linha);
-        float beneficio = stof(linha);
-        // inserir no vertice i com tal beneficio
+        getline(fileIn, linha, '\n');
+        this->createNodeIfDoesntExist(i, stof(linha));
     }
 
+    // ???????????????
+    std::stringstream stream;
     getline(fileIn, linha, '\n');
+    stream << linha;
     for (int i = 0; i < quantidadeNos; ++i)
     {
         for (int j = 0; j < quantidadeNos; ++j)
         {
-            // linha >> grafo->matrizDistancia[i][j];
+            stream >> this->distanceMatrix[i][j]; // ?????????????????????
         }
     }
 }

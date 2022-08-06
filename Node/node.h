@@ -18,7 +18,7 @@ class Node {
     Pk: a partir da entrada do txt -> sem repetir
     */
    public:
-    Node(int id, int peso, Graph* graph);
+    Node(int id, float weight, Graph* graph);
     ~Node();
 
     void addNode(Node* node, Edge* edge, Graph* graph);
