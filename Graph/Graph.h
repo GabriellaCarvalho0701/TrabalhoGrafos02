@@ -24,11 +24,9 @@ class Graph {
 
     Graph(int quantityNodes);
 
-    Graph(int quantityNodes, int inferiorLimit, int upperLimit);
+    Graph(int inferiorLimit, int upperLimit);
 
     ~Graph() = default;
-
-
 
     void addCounterOfNodes();
     int getCounterOfNodes();
@@ -36,12 +34,12 @@ class Graph {
     void addCounterOfEdges();
     int getCounterOfEdges();
 
+    void setLimit(int limit);
+    int getLimit();
+
     void setFirstNode(Node *node);
     Node *getFirstNode();
-
-    bool isEdgeWeighted();
-    bool isNodeWeighted();
-    bool getDirected();
+    void printNodes();
 
     int *getAllAdjacents(int id, int *cont);
     Node *getNodeIfExist(int id);
@@ -51,15 +49,7 @@ class Graph {
     Edge *createEdge(Node *nodeHead, Node *nodeTail, float weight);
 
     void outputGraph(string outputFileName);
-    void outputNodes(string outputFileName, Node *nodes[], int cont, string textStart);
-    void outputGraphSetOfNodes(string outputFileName, std::queue<int> nodes);
-    void outputEdgeInducedSubgraph(string outputFileName, vector<Edge *> &searchTree, vector<Edge *> &returnEdges);
     void printListAdjacents(int id);
-    void printNodes();
-
-    void floyd(int idNodeOrig, int idNodeDest);
-    void dijkstra(int idNodeOrig, int idNodeDest);
-    int edgeCost(Node *nodeHead, Node *tailNode);
 
     int *depthSearch(Node *node);
     void auxDepthSearch(Node *node, int visitedNodes[], int *counter);
@@ -72,22 +62,16 @@ class Graph {
     Edge *insertEdge(Edge *edge);
     Node *insertNode(Node *node);
 
-    void setDistanceMatrix();
-    void setDistanceMatrix(int nodeHead, int nodeTail, int weight);
-
     void leituraArquivo();
 
-private:
+   private:
     Node *firstNode;
     int nodesTotal;
     int edgesTotal;
     float inferiorLimit;
     float upperLimit;
-    bool hasWeightedEdges;
-    bool isDirected;
-    bool hasWeightedNodes;
+    float currentLimit;
     vector<Edge *> vectorOfEdges;
-    float **distanceMatrix; // deletar
 
     // por daniel, para leitura do arquivo
     const string pathArquivoEntrada;
@@ -97,9 +81,9 @@ private:
     int quantidadeClusters;
     string clusterType;
 
-    std::vector<std::pair<int,int>> vertices; // deducao do codigo do stenio
+    std::vector<std::pair<int, int>> vertices;  // deducao do codigo do stenio
     std::vector<std::vector<float>> matrizDistancia;
-    void processaPrimeiraLinhaRanRealSparse(const string &linha);
+    vector<pair<int, int>> processaPrimeiraLinhaRanRealSparse(const string &linha);
 
     void leituraRanRealeSparse(std::stringstream &fileIn);
 
@@ -107,8 +91,11 @@ private:
 
     void criaArestas();
 
-    template<typename T>
+    template <typename T>
     void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
+
+    void guloso(vector<pair<int, int>> limiteClusters);
+    void imprimeCluster(vector<Graph *> solucao);
 };
 
 #endif
