@@ -637,69 +637,45 @@ void Graph::leituraRanRealeSparse(std::stringstream &fileIn)
     {
         this->matrizDistancia[i].resize(this->getCounterOfNodes());
     }
+
     // processo restante das arestas
     string linha;
     int verticeFonte = 0, verticeAlvo = 0;
     float beneficio = 0;
-    while (getline(fileIn, linha, ' ') && !linha.empty())
+    while (getline(fileIn, linha, '\n'))
     {
-        verticeFonte = stoi(linha);
+        if (linha.empty() || linha.find('\r') != string::npos)
+        { break; }
 
-        getline(fileIn, linha, ' ');
-        verticeAlvo = stoi(linha);
-
-        getline(fileIn, linha, '\n');
-        beneficio = stof(linha);
-
-        // apagar linha abaixo? manter apenas a matriz?
-        this->createEdge(getNodeIfExist(verticeFonte), getNodeIfExist(verticeAlvo),
-                         beneficio);
-
+        std::stringstream linhaStream(linha);
+        linhaStream >> verticeFonte;
+        linhaStream >> verticeAlvo;
+        linhaStream >> beneficio;
         this->matrizDistancia[verticeFonte][verticeAlvo] = beneficio;
         this->matrizDistancia[verticeAlvo][verticeFonte] = beneficio;
+
+        // this->createEdge(getNodeIfExist(verticeFonte), getNodeIfExist(verticeAlvo), beneficio);
     }
-    imprimeMatrizParaDebug(this->matrizDistancia);
+    // imprimeMatrizParaDebug(this->matrizDistancia);
 }
 
 
 void Graph::processaPrimeiraLinhaRanRealSparse(const string &linha)
 {
-    // divide a linha em palavras para ser possível separar os dados
-    std::stringstream ss(linha);
-    string item;
-    vector<string> tokens;
-    while (getline(ss, item, ' '))
+    std::stringstream stream(linha);
+    string temp;
+    stream >> this->nodesTotal >> this->quantidadeClusters >> temp >> this->inferiorLimit >> this->upperLimit;
+    for (int i = 0; i < (this->quantidadeClusters * 2) - 1; ++i)
     {
-        tokens.push_back(item);
+        stream >> temp;
     }
-    // informacoes basicas do grafo
-    this->nodesTotal = stoi(tokens[0]);
-    this->quantidadeClusters = stoi(tokens[1]);
-    this->clusterType = tokens[2]; //  ds ou ss TODO: nao parece ser realmente util, visto que todos sao ds e nao usa-se essa informacao mais?!
-
-    // TODO: visto que stenio nao usa essa informacao e nao parece ser util guardar o limite de cada cluster
-    // get limites dos clusters
-    vector<pair<int, int>> clustersLimites; //clustersLimites[i] = (limiteInferior, limiteSuperior)
-    for (int i = 0; i < quantidadeClusters; i++)
-    {
-        int clusterId = stoi(tokens[3 + i * 2]);
-        int clusterLimite = stoi(tokens[4 + i * 2]);
-        clustersLimites.emplace_back(clusterId, clusterLimite);
-    }
-
-    // get node weights
     int contVertices = 0;
-    auto nodesTotalOriginal = this->nodesTotal; // bug-prone: this->nodesTotal esta sendo atualizado ao criar os nos e possivelmente errando a contagem
-    for (int i = 0; i < nodesTotalOriginal; i++)
+    while (stream >> temp && temp != "\n")
     {
-        float nodeWeight = stof(tokens[4 + quantidadeClusters * 2 + i]);
-        this->createNodeIfDoesntExist(i, nodeWeight); // remover essa linha?
-        this->vertices.emplace_back(contVertices, nodeWeight);
-        ++contVertices;
+        this->vertices.emplace_back(contVertices, stof(temp));
+        this->createNodeIfDoesntExist(contVertices, stof(linha));
+        contVertices++;
     }
-    cout << "nodesTotal: " << this->nodesTotal << endl;
-    cout << "nodesTotalOriginal: " << nodesTotalOriginal << endl; // nao deveria haver variacao
-    this->nodesTotal = nodesTotalOriginal; // bug-prone: this->nodesTotal esta sendo atualizado ao criar os nos e possivelmente errando a contagem
 }
 
 void Graph::leituraHandover(std::stringstream &fileIn)
@@ -723,6 +699,7 @@ void Graph::leituraHandover(std::stringstream &fileIn)
     for (int i = 0; i < quantidadeNos; ++i)
     {
         getline(fileIn, linha, '\n');
+        this->vertices.emplace_back(i, stof(linha));
         this->createNodeIfDoesntExist(i, stof(linha));
     }
 
@@ -740,6 +717,20 @@ void Graph::leituraHandover(std::stringstream &fileIn)
     // imprimeMatrizParaDebug(matrizDistancia);
 }
 
+void Graph::criaArestas()
+{
+    for (int i = 0; i < this->getCounterOfNodes(); i++)
+    {
+        for (int j = 0; j < this->getCounterOfNodes(); j++)
+        {
+            if (matrizDistancia[i][j] != 0)
+            {
+                this->createEdge(this->getNodeIfExist(i), this->getNodeIfExist(j), this->matrizDistancia[i][j]);
+            }
+        }
+    }
+}
+
 template<typename T>
 void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>> &matriz)
 {
@@ -754,18 +745,4 @@ void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>> &matriz)
     }
     // restore buf to cout
     std::unitbuf(cout);
-}
-
-void Graph::criaArestas()
-{
-    for (int i = 0; i < this->getCounterOfNodes(); i++)
-    {
-        for (int j = 0; j < this->getCounterOfNodes(); j++)
-        {
-            if (matrizDistancia[i][j] != 0)
-            {
-                this->createEdge(this->getNodeIfExist(i), this->getNodeIfExist(j), this->matrizDistancia[i][j]);
-            }
-        }
-    }
 }
