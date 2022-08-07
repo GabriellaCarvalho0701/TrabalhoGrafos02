@@ -434,26 +434,28 @@ void Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     for (int i = 0; i < this->getCounterOfNodes(); i++) {
         this->matrizDistancia[i].resize(this->getCounterOfNodes());
     }
+
     // processo restante das arestas
     string linha;
     int verticeFonte = 0, verticeAlvo = 0;
     float beneficio = 0;
-    while (getline(fileIn, linha, ' ') && !linha.empty()) {
-        verticeFonte = stoi(linha);
-
-        getline(fileIn, linha, ' ');
-        verticeAlvo = stoi(linha);
-
-        getline(fileIn, linha, '\n');
-        beneficio = stof(linha);
-
-        // apagar linha abaixo? manter apenas a matriz?
-        this->createEdge(getNodeIfExist(verticeFonte), getNodeIfExist(verticeAlvo), beneficio);
-
+    
+    while (getline(fileIn, linha, '\n')) {
+        if (linha.empty() || linha.find('\r') != string::npos)
+        { break; }
+   
+        std::stringstream linhaStream(linha);
+        linhaStream >> verticeFonte;
+        linhaStream >> verticeAlvo;
+        linhaStream >> beneficio;
         this->matrizDistancia[verticeFonte][verticeAlvo] = beneficio;
         this->matrizDistancia[verticeAlvo][verticeFonte] = beneficio;
+
+        // this->createEdge(getNodeIfExist(verticeFonte), getNodeIfExist(verticeAlvo), beneficio);
     }
+    
     // imprimeMatrizParaDebug(this->matrizDistancia);
+    
     guloso(limitClusters);
 }
 
@@ -489,6 +491,7 @@ vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& l
     }
 
     return clustersLimites;
+
 }
 
 void Graph::leituraHandover(std::stringstream& fileIn) {
@@ -509,6 +512,7 @@ void Graph::leituraHandover(std::stringstream& fileIn) {
 
     for (int i = 0; i < quantidadeNos; ++i) {
         getline(fileIn, linha, '\n');
+        this->vertices.emplace_back(i, stof(linha));
         this->createNodeIfDoesntExist(i, stof(linha));
     }
 
@@ -524,11 +528,28 @@ void Graph::leituraHandover(std::stringstream& fileIn) {
     // imprimeMatrizParaDebug(matrizDistancia);
 }
 
-template <typename T>
-void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
+void Graph::criaArestas()
+{
+    for (int i = 0; i < this->getCounterOfNodes(); i++)
+    {
+        for (int j = 0; j < this->getCounterOfNodes(); j++)
+        {
+            if (matrizDistancia[i][j] != 0)
+            {
+                this->createEdge(this->getNodeIfExist(i), this->getNodeIfExist(j), this->matrizDistancia[i][j]);
+            }
+        }
+    }
+}
+
+template<typename T>
+void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>> &matriz)
+{
     std::unitbuf(cout);
-    for (int i = 0; i < matriz.size(); ++i) {
-        for (int j = 0; j < matriz[i].size(); ++j) {
+    for (int i = 0; i < matriz.size(); ++i)
+    {
+        for (int j = 0; j < matriz[i].size(); ++j)
+        {
             cout << matriz[i][j] << " ";
         }
         cout << endl;
@@ -537,15 +558,6 @@ void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
     std::unitbuf(cout);
 }
 
-void Graph::criaArestas() {
-    for (int i = 0; i < this->getCounterOfNodes(); i++) {
-        for (int j = 0; j < this->getCounterOfNodes(); j++) {
-            if (matrizDistancia[i][j] != 0) {
-                this->createEdge(this->getNodeIfExist(i), this->getNodeIfExist(j), this->matrizDistancia[i][j]);
-            }
-        }
-    }
-}
 
 void Graph::guloso(vector<pair<int, int>> limitClusters) {
     vector<Graph*> solucao;
