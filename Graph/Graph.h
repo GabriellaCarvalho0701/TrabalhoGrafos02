@@ -87,23 +87,28 @@ private:
     bool isDirected;
     bool hasWeightedNodes;
     vector<Edge *> vectorOfEdges;
-    float **distanceMatrix;
+    float **distanceMatrix; // deletar
 
     // por daniel, para leitura do arquivo
+    const string pathArquivoEntrada;
+    const string pathArquivoSaida;
+
+    const int tipoInstancia;
     int quantidadeClusters;
     string clusterType;
 
-    const string pathArquivoEntrada;
-    const string pathArquivoSaida;
-    const int tipoInstancia;
-
-    // std::vector<std::pair<int,float>> vertices; // nao entendi pq stenio amazena dessa forma
-
+    std::vector<std::pair<int,int>> vertices; // deducao do codigo do stenio
+    std::vector<std::vector<float>> matrizDistancia;
     void processaPrimeiraLinhaRanRealSparse(const string &linha);
+
     void leituraRanRealeSparse(std::stringstream &fileIn);
+
     void leituraHandover(std::stringstream &fileIn);
 
-    void imprimeMatrizParaDebug(vector<vector<int>> matriz);
+    void criaArestas();
+
+    template<typename T>
+    void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
 };
 
 #endif
