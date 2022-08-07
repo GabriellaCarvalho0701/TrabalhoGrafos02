@@ -39,7 +39,8 @@ class Graph {
 
     void setFirstNode(Node *node);
     Node *getFirstNode();
-    void printNodes();
+    void printNodes(); 
+    void printNodes2(); 
 
     int *getAllAdjacents(int id, int *cont);
     Node *getNodeIfExist(int id);
@@ -95,7 +96,7 @@ class Graph {
     void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
 
     void guloso(vector<pair<int, int>> limiteClusters);
-    void imprimeCluster(vector<Graph *> solucao);
+    void imprimeCluster(vector<Graph *> solucao, int option);
 };
 
 #endif
