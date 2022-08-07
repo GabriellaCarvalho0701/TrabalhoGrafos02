@@ -587,8 +587,6 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
         // cout << "- " << idRand << endl;
     }
 
-    // ordenando a matriz de distancia da aresta de maior beneficio para a de menor
-
     /*while (!listaCandidatos.empty()) {
         cout << listaCandidatos.top().first << ": " << listaCandidatos.top().second.first << " , " << listaCandidatos.top().second.second << endl;
         listaCandidatos.pop();
@@ -601,9 +599,9 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
         Graph* cluster = solucao[i];
         int idAux = cluster->getFirstNode()->getId();
 
+        // while que garante que os clusters tenham o limite inferior
         while (cluster->getLimit() < cluster->inferiorLimit || listaCandidatos.empty()) {
-            // cout << "==" << idAux;
-
+            // ordenando a lista de candidatos da aresta de maior beneficio para a de menor de acordo com o nó que entra no cluster
             for (int j = 0; j < getCounterOfNodes(); j++) {
                 if (nosVisitados[j])
                     continue;
@@ -618,10 +616,8 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
             Node* noGrafo = cluster->getNodeIfExist(parDeNo.first);
             Node* noExterno = getNodeIfExist(parDeNo.second);
 
-            if (noGrafo == nullptr) {
-                noGrafo = cluster->getNodeIfExist(parDeNo.second);
-                noExterno = getNodeIfExist(parDeNo.first);
-            }
+            if (nosVisitados[noExterno->getId()])
+                continue;
 
             if (cluster->getLimit() + noExterno->getWeight() > cluster->upperLimit)
                 continue;
@@ -631,16 +627,19 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
             nosVisitados[noExterno->getId()] = true;
             contNosVisitados++;
             idAux = noExterno->getId();
-            // cout << "- " << noExterno->getId() << endl;
         }
     }
 
+    // atualiza a lista de candidatos com os nós que ainda não estão nos clusters
     for (int i = 0; i < getCounterOfNodes(); i++) {
         for (int j = 0; j < getCounterOfNodes(); j++) {
+            if (nosVisitados[i] == true && nosVisitados[j] == true)
+                continue;
             listaCandidatos.push(make_pair(matrizDistancia[i][j], make_pair(i, j)));
         }
     }
 
+    // while que garante que todos os nós estão nos cluters e garante que os clusters tenham até o limite inferior
     while (contNosVisitados < this->getCounterOfNodes() || !listaCandidatos.empty()) {
         if (contNosVisitados >= this->getCounterOfNodes())
             break;
@@ -675,16 +674,16 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
             nosVisitados[noExterno->getId()] = true;
             contNosVisitados++;
 
-            // cout << "- " << noExterno->getId() << endl;
-
             break;
         }
     }
 
-    // cout << "nos: " << contNosVisitados << " " << getCounterOfNodes();
-    //   imprimeMatrizParaDebug(matrizAux);
+    cout << "Nos visitados: " << contNosVisitados << " Nos do grafo: " << getCounterOfNodes() << endl;
+    //    imprimeMatrizParaDebug(matrizAux);
 
     imprimeCluster(solucao);
+
+    cout << "Fim" << endl;
 }
 
 void Graph::imprimeCluster(vector<Graph*> solucao) {
