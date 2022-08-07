@@ -439,11 +439,12 @@ void Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     string linha;
     int verticeFonte = 0, verticeAlvo = 0;
     float beneficio = 0;
-    
+
     while (getline(fileIn, linha, '\n')) {
-        if (linha.empty() || linha.find('\r') != string::npos)
-        { break; }
-   
+        if (linha.empty() || linha.find('\r') != string::npos) {
+            break;
+        }
+
         std::stringstream linhaStream(linha);
         linhaStream >> verticeFonte;
         linhaStream >> verticeAlvo;
@@ -453,9 +454,9 @@ void Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
 
         // this->createEdge(getNodeIfExist(verticeFonte), getNodeIfExist(verticeAlvo), beneficio);
     }
-    
+
     // imprimeMatrizParaDebug(this->matrizDistancia);
-    
+
     guloso(limitClusters);
 }
 
@@ -491,7 +492,6 @@ vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& l
     }
 
     return clustersLimites;
-
 }
 
 void Graph::leituraHandover(std::stringstream& fileIn) {
@@ -528,28 +528,21 @@ void Graph::leituraHandover(std::stringstream& fileIn) {
     // imprimeMatrizParaDebug(matrizDistancia);
 }
 
-void Graph::criaArestas()
-{
-    for (int i = 0; i < this->getCounterOfNodes(); i++)
-    {
-        for (int j = 0; j < this->getCounterOfNodes(); j++)
-        {
-            if (matrizDistancia[i][j] != 0)
-            {
+void Graph::criaArestas() {
+    for (int i = 0; i < this->getCounterOfNodes(); i++) {
+        for (int j = 0; j < this->getCounterOfNodes(); j++) {
+            if (matrizDistancia[i][j] != 0) {
                 this->createEdge(this->getNodeIfExist(i), this->getNodeIfExist(j), this->matrizDistancia[i][j]);
             }
         }
     }
 }
 
-template<typename T>
-void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>> &matriz)
-{
+template <typename T>
+void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
     std::unitbuf(cout);
-    for (int i = 0; i < matriz.size(); ++i)
-    {
-        for (int j = 0; j < matriz[i].size(); ++j)
-        {
+    for (int i = 0; i < matriz.size(); ++i) {
+        for (int j = 0; j < matriz[i].size(); ++j) {
             cout << matriz[i][j] << " ";
         }
         cout << endl;
@@ -557,7 +550,6 @@ void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>> &matriz)
     // restore buf to cout
     std::unitbuf(cout);
 }
-
 
 void Graph::guloso(vector<pair<int, int>> limitClusters) {
     vector<Graph*> solucao;
@@ -592,18 +584,10 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
         Graph* cluster = solucao[i];
         cluster->createNodeIfDoesntExist(idRand, node->getWeight());
         cluster->setLimit(node->getWeight());
-        cout << "- " << idRand << endl;
+        // cout << "- " << idRand << endl;
     }
 
     // ordenando a matriz de distancia da aresta de maior beneficio para a de menor
-    vector<vector<float>> matrizAux = this->matrizDistancia;
-    priority_queue<pair<float, pair<int, int>>> listaCandidatos;  // distancia, par(nocabeça, nocauda)
-
-    for (int i = 0; i < getCounterOfNodes(); i++) {
-        for (int j = 0; j < getCounterOfNodes(); j++) {
-            listaCandidatos.push(make_pair(matrizAux[i][j], make_pair(i, j)));
-        }
-    }
 
     /*while (!listaCandidatos.empty()) {
         cout << listaCandidatos.top().first << ": " << listaCandidatos.top().second.first << " , " << listaCandidatos.top().second.second << endl;
@@ -611,6 +595,52 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
     }*/
 
     // adicionando os demais nós aos clusters respeitando os limites
+    priority_queue<pair<float, pair<int, int>>> listaCandidatos;
+
+    for (int i = 0; i < this->quantidadeClusters; i++) {
+        Graph* cluster = solucao[i];
+        int idAux = cluster->getFirstNode()->getId();
+
+        while (cluster->getLimit() < cluster->inferiorLimit || listaCandidatos.empty()) {
+            // cout << "==" << idAux;
+
+            for (int j = 0; j < getCounterOfNodes(); j++) {
+                if (nosVisitados[j])
+                    continue;
+                listaCandidatos.push(make_pair(matrizDistancia[idAux][j], make_pair(idAux, j)));
+            }
+
+            pair<float, pair<int, int>> candidato = listaCandidatos.top();
+            float distancia = candidato.first;
+            pair<int, int> parDeNo = candidato.second;
+            listaCandidatos.pop();
+
+            Node* noGrafo = cluster->getNodeIfExist(parDeNo.first);
+            Node* noExterno = getNodeIfExist(parDeNo.second);
+
+            if (noGrafo == nullptr) {
+                noGrafo = cluster->getNodeIfExist(parDeNo.second);
+                noExterno = getNodeIfExist(parDeNo.first);
+            }
+
+            if (cluster->getLimit() + noExterno->getWeight() > cluster->upperLimit)
+                continue;
+
+            cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
+            cluster->setLimit(noExterno->getWeight());
+            nosVisitados[noExterno->getId()] = true;
+            contNosVisitados++;
+            idAux = noExterno->getId();
+            // cout << "- " << noExterno->getId() << endl;
+        }
+    }
+
+    for (int i = 0; i < getCounterOfNodes(); i++) {
+        for (int j = 0; j < getCounterOfNodes(); j++) {
+            listaCandidatos.push(make_pair(matrizDistancia[i][j], make_pair(i, j)));
+        }
+    }
+
     while (contNosVisitados < this->getCounterOfNodes() || !listaCandidatos.empty()) {
         if (contNosVisitados >= this->getCounterOfNodes())
             break;
@@ -619,7 +649,6 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
         float distancia = candidato.first;
         pair<int, int> parDeNo = candidato.second;
         listaCandidatos.pop();
-        // listaCandidatos.pop();
 
         if (nosVisitados[parDeNo.first] == true && nosVisitados[parDeNo.second] == true)
             continue;
@@ -646,13 +675,14 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
             nosVisitados[noExterno->getId()] = true;
             contNosVisitados++;
 
-            cout << "- " << noExterno->getId() << endl;
+            // cout << "- " << noExterno->getId() << endl;
 
             break;
         }
     }
+
     // cout << "nos: " << contNosVisitados << " " << getCounterOfNodes();
-    //  imprimeMatrizParaDebug(matrizAux);
+    //   imprimeMatrizParaDebug(matrizAux);
 
     imprimeCluster(solucao);
 }
@@ -681,7 +711,7 @@ void Graph::printNodes() {
     cout << "Limite: " << getLimit() << endl;
 
     while (node != nullptr) {
-        cout << node->getId() << ", ";
+        cout << node->getId() << ",";
         node = node->getNextNode();
         cont++;
     }
