@@ -160,7 +160,7 @@ bool Graph::isNodeInGraph(Node* searchedNode) {
  *         int weight: peso do vértice
  *@return: um ponteiro para o objeto nó criado ou já previamente existente
  ****************************************************************/
-Node* Graph::createNodeIfDoesntExist(int id, int weight) {
+Node* Graph::createNodeIfDoesntExist(int id, float weight) {
     Node* node = this->getNodeIfExist(id);
 
     if (node == nullptr) {
@@ -182,7 +182,7 @@ Node* Graph::createNodeIfDoesntExist(int id, int weight) {
  *         int weight: peso da aresta
  *@return: um ponteiro para o objeto aresta criado
  ****************************************************************/
-Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, int weight) {
+Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, float weight) {
     Edge* newEdge = new Edge(nodeHead, nodeTail, weight, this);
     this->vectorOfEdges.emplace_back(newEdge);
 
