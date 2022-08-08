@@ -30,12 +30,18 @@ using std::vector;
 
 using std::string;
 
-Graph::Graph(size_t argc, char** argv)
-    : nodesTotal(0), edgesTotal(0), firstNode(nullptr), inferiorLimit(-1), upperLimit(-1), currentLimit(0), pathArquivoEntrada(static_cast<string>(argv[1])), pathArquivoSaida(static_cast<string>(argv[2])), tipoInstancia(static_cast<int>(atoi(argv[3]))) {
-    if (argc != 4) {
-        std::cerr << "[ERRO] parametros do programa incorretos\nEsperado: ./execGrupoX_ <arquivo_entrada> <arquivo_saida> <Tipo_Instancia>\n";
+Graph::Graph(size_t argc, char **argv) : nodesTotal(0), edgesTotal(0), firstNode(nullptr), inferiorLimit(-1),
+                                         upperLimit(-1), currentLimit(0)
+{
+    if (argc != 4)
+    {
+        std::cerr
+                << "[ERRO] parametros do programa incorretos\nEsperado: ./execGrupoX <arquivo_entrada> <arquivo_saida> <Tipo_Instancia>\n";
         exit(-1);
     }
+    pathArquivoEntrada = static_cast<string>(argv[1]);
+    pathArquivoSaida = static_cast<string>(argv[2]);
+    tipoInstancia = std::stoi(argv[3]);
 }
 
 Graph::Graph(int inferiorLimit, int upperLimit) : tipoInstancia(-1)  // necessario
@@ -186,6 +192,10 @@ vector<pair<int, int>> Graph::leituraArquivo() {
     }
 
     criaArestas();
+    for (int i = 0; i < this->nodesTotal; ++i)
+    {
+        this->matrizDistancia[i][i] = 0.0f;
+    }
 
     return limiteClusters;
 }
@@ -198,10 +208,7 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     limitClusters = processaPrimeiraLinhaRanRealSparse(primeiraLinha);  // resgata informacoes basicas do grafo
 
     // resize matriz distancia
-    this->matrizDistancia.resize(this->getCounterOfNodes());
-    for (int i = 0; i < this->getCounterOfNodes(); i++) {
-        this->matrizDistancia[i].resize(this->getCounterOfNodes());
-    }
+    this->matrizDistancia.resize(this->getCounterOfNodes(), vector<float>(this->getCounterOfNodes(), 0.0f));
 
     // processo restante das arestas
     string linha;
@@ -250,12 +257,11 @@ vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& l
     }
 
     // get node weights
-    int contVertices = 0;
-    for (int i = 0; i < nodesTotalOriginal; i++) {
+    for (int i = 0; i < nodesTotalOriginal; i++)
+    {
         float nodeWeight = stof(tokens[4 + quantidadeClusters * 2 + i]);
-        this->createNodeIfDoesntExist(i, nodeWeight);  // remover essa linha?
-        this->vertices.emplace_back(contVertices, nodeWeight);
-        ++contVertices;
+        this->createNodeIfDoesntExist(i, nodeWeight);
+        this->vertices.emplace_back(i, nodeWeight);
     }
 
     return clustersLimites;

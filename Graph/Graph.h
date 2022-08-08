@@ -83,10 +83,10 @@ class Graph {
     float totalBeneficio;
 
     // por daniel, para leitura do arquivo
-    const string pathArquivoEntrada;
-    const string pathArquivoSaida;
+    string pathArquivoEntrada;
+    string pathArquivoSaida;
 
-    const int tipoInstancia;
+    int tipoInstancia;
     int quantidadeClusters;
     string clusterType;
 };
