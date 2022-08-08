@@ -2,6 +2,7 @@
 
 #include <time.h>
 
+#include <limits>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -150,11 +151,13 @@ Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, float weight) {
     return newEdge;
 }
 
-std::streampos inline tamanhoArquivo(fstream& arq) {
-    arq.seekg(0, std::fstream::end);
-    std::streampos tam = arq.tellg();
-    arq.seekg(0);
-    return tam;
+long inline tamanhoArquivo(fstream& arq)
+{
+    arq.ignore( std::numeric_limits<std::streamsize>::max() );
+    std::streamsize length = arq.gcount();
+    arq.clear();
+    arq.seekg( 0, std::ios_base::beg );
+    return length;
 }
 
 vector<pair<int, int>> Graph::leituraArquivo() {
@@ -206,7 +209,7 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     float beneficio = 0;
 
     while (getline(fileIn, linha, '\n') && !fileIn.eof()) {
-        if (linha.empty() || linha.find("\r\n") != string::npos) {
+        if (linha.empty()) {
             break;
         }
 
@@ -219,7 +222,7 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
 
         // this->createEdge(getNodeIfExist(verticeFonte), getNodeIfExist(verticeAlvo), beneficio);
     }
-
+    cout << "";
     // imprimeMatrizParaDebug(this->matrizDistancia);
     return limitClusters;
 }
