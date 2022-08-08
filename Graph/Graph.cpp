@@ -333,8 +333,6 @@ float Graph::greedy(vector<pair<int, int>> clutersLimit, bool randomized) {
         visitedNodes[i] = false;
 
     for (int i = 0; i < this->quantidadeClusters; i++) {
-                cout << i;
-
         pair<int, int> clusterLimit = clutersLimit.at(i);
         Graph* cluster = new Graph(clusterLimit.first, clusterLimit.second);
         vectorSolutionOfClusters.push_back(cluster);
@@ -405,15 +403,12 @@ float Graph::greedy(vector<pair<int, int>> clutersLimit, bool randomized) {
 
         }
 
-cout<< endl;
     }
-
-    cout << "Saida";
 
     return totalBenefit;
 }
 
-float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
+vector<Graph *>  Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float *result) {
     vector<Graph*> solucao;
     *result = 0;
     bool* nosVisitados = new bool[getCounterOfNodes()];
