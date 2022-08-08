@@ -37,7 +37,7 @@ void processOperationChoice(Graph *graph, vector<pair<int, int>> limiteClusters)
             graph->algGuloso(limiteClusters);
             break;
         case 3:
-            cout << "Algoritmo Guloso Randomizado Adaptativo" << endl;
+            cout << "Algoritmo Guloso Randomizado e Adaptativo" << endl;
             graph->algGulosoRandAdapt(limiteClusters);
             break;
         case 4:

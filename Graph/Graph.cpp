@@ -2,10 +2,10 @@
 
 #include <time.h>
 
-#include <limits>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <list>
 #include <memory>
 #include <queue>
@@ -30,13 +30,10 @@ using std::vector;
 
 using std::string;
 
-Graph::Graph(size_t argc, char **argv) : nodesTotal(0), edgesTotal(0), firstNode(nullptr), inferiorLimit(-1),
-                                         upperLimit(-1), currentLimit(0)
-{
-    if (argc != 4)
-    {
+Graph::Graph(size_t argc, char** argv) : nodesTotal(0), edgesTotal(0), firstNode(nullptr), inferiorLimit(-1), upperLimit(-1), currentLimit(0) {
+    if (argc != 4) {
         std::cerr
-                << "[ERRO] parametros do programa incorretos\nEsperado: ./execGrupoX <arquivo_entrada> <arquivo_saida> <Tipo_Instancia>\n";
+            << "[ERRO] parametros do programa incorretos\nEsperado: ./execGrupoX <arquivo_entrada> <arquivo_saida> <Tipo_Instancia>\n";
         exit(-1);
     }
     pathArquivoEntrada = static_cast<string>(argv[1]);
@@ -157,13 +154,11 @@ Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, float weight) {
     return newEdge;
 }
 
-long inline tamanhoArquivo(fstream& arq)
-{
-    arq.ignore( std::numeric_limits<std::streamsize>::max() );
-    std::streamsize length = arq.gcount();
-    arq.clear();
-    arq.seekg( 0, std::ios_base::beg );
-    return length;
+std::streampos inline tamanhoArquivo(fstream& arq) {
+    arq.seekg(0, std::fstream::end);
+    std::streampos tam = arq.tellg();
+    arq.seekg(0);
+    return tam;
 }
 
 vector<pair<int, int>> Graph::leituraArquivo() {
@@ -192,10 +187,6 @@ vector<pair<int, int>> Graph::leituraArquivo() {
     }
 
     criaArestas();
-    for (int i = 0; i < this->nodesTotal; ++i)
-    {
-        this->matrizDistancia[i][i] = 0.0f;
-    }
 
     return limiteClusters;
 }
@@ -208,7 +199,10 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     limitClusters = processaPrimeiraLinhaRanRealSparse(primeiraLinha);  // resgata informacoes basicas do grafo
 
     // resize matriz distancia
-    this->matrizDistancia.resize(this->getCounterOfNodes(), vector<float>(this->getCounterOfNodes(), 0.0f));
+    this->matrizDistancia.resize(this->getCounterOfNodes());
+    for (int i = 0; i < this->getCounterOfNodes(); i++) {
+        this->matrizDistancia[i].resize(this->getCounterOfNodes());
+    }
 
     // processo restante das arestas
     string linha;
@@ -216,7 +210,7 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     float beneficio = 0;
 
     while (getline(fileIn, linha, '\n') && !fileIn.eof()) {
-        if (linha.empty()) {
+        if (linha.empty() || linha.find("\r\n") != string::npos) {
             break;
         }
 
@@ -224,12 +218,15 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
         linhaStream >> verticeFonte;
         linhaStream >> verticeAlvo;
         linhaStream >> beneficio;
-        this->matrizDistancia[verticeFonte][verticeAlvo] = beneficio;
-        this->matrizDistancia[verticeAlvo][verticeFonte] = beneficio;
+
+        // cout << verticeAlvo << "--> " << verticeFonte << endl;
+
+        matrizDistancia[verticeFonte][verticeAlvo] = beneficio;
+        matrizDistancia[verticeAlvo][verticeFonte] = beneficio;
 
         // this->createEdge(getNodeIfExist(verticeFonte), getNodeIfExist(verticeAlvo), beneficio);
     }
-    cout << "";
+
     // imprimeMatrizParaDebug(this->matrizDistancia);
     return limitClusters;
 }
@@ -257,11 +254,12 @@ vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& l
     }
 
     // get node weights
-    for (int i = 0; i < nodesTotalOriginal; i++)
-    {
+    int contVertices = 0;
+    for (int i = 0; i < nodesTotalOriginal; i++) {
         float nodeWeight = stof(tokens[4 + quantidadeClusters * 2 + i]);
-        this->createNodeIfDoesntExist(i, nodeWeight);
-        this->vertices.emplace_back(i, nodeWeight);
+        this->createNodeIfDoesntExist(i, nodeWeight);  // remover essa linha?
+        this->vertices.emplace_back(contVertices, nodeWeight);
+        ++contVertices;
     }
 
     return clustersLimites;
@@ -314,6 +312,7 @@ void Graph::criaArestas() {
 template <typename T>
 void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
     std::unitbuf(cout);
+
     for (int i = 0; i < matriz.size(); ++i) {
         for (int j = 0; j < matriz[i].size(); ++j) {
             cout << matriz[i][j] << " ";
@@ -329,13 +328,17 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
     *result = 0;
     bool* nosVisitados = new bool[getCounterOfNodes()];
     int contNosVisitados = 0;
+    vector<vector<bool>> arestasVisitadas;
+
+    arestasVisitadas.resize(this->getCounterOfNodes());
+    for (int i = 0; i < this->getCounterOfNodes(); i++) {
+        arestasVisitadas[i].resize(this->getCounterOfNodes());
+        nosVisitados[i] = false;
+    }
 
     float resultBeneficio = 0;
 
     float beneficio = 0;
-
-    for (int i = 0; i < getCounterOfNodes(); i++)
-        nosVisitados[i] = false;
 
     // criando os clusters da solucao
     for (int i = 0; i < this->quantidadeClusters; i++) {
@@ -401,8 +404,21 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
                 cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit && nosVisitados[noExterno->getId()] == false) {
                 cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
                 cluster->totalBeneficio += distancia;
-                cout << "- " << distancia << endl;
+                arestasVisitadas[noExterno->getId()][noGrafo->getId()] = true;
+                arestasVisitadas[noGrafo->getId()][noExterno->getId()] = true;
+
+                Node* noCluster = cluster->getFirstNode();
+                while (noCluster != nullptr) {
+                    if (arestasVisitadas[noExterno->getId()][noCluster->getId()] == false && arestasVisitadas[noCluster->getId()][noExterno->getId()] == false) {
+                        cluster->totalBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
+                        resultBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
+                        // cout << noExterno->getId() << " " << noCluster->getId() << endl;
+                    }
+                    noCluster = noCluster->getNextNode();
+                }
+
                 resultBeneficio += distancia;
+                // cout << resultBeneficio << " " << cluster->getLimit() << endl;
 
                 cluster->setLimit(noExterno->getWeight());
                 nosVisitados[noExterno->getId()] = true;
@@ -446,6 +462,21 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
                     cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
                     cluster->totalBeneficio += distancia;
                     resultBeneficio += distancia;
+
+                    arestasVisitadas[parDeNo.first][parDeNo.second] = true;
+                    arestasVisitadas[parDeNo.second][parDeNo.first] = true;
+
+                    Node* noCluster = cluster->getFirstNode();
+                    while (noCluster != nullptr) {
+                        if (arestasVisitadas[noExterno->getId()][noCluster->getId()] == false && arestasVisitadas[noCluster->getId()][noExterno->getId()] == false) {
+                            cluster->totalBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
+                            resultBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
+                            // cout << noExterno->getId() << " - " << noCluster->getId() << endl;
+                        }
+
+                        noCluster = noCluster->getNextNode();
+                    }
+
                     cluster->setLimit(noExterno->getWeight());
                     nosVisitados[noExterno->getId()] = true;
                     contNosVisitados++;
@@ -467,7 +498,7 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
 void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBeneficio) {
     for (int i = 0; i < this->quantidadeClusters; i++) {
         Graph* cluster = solucao[i];
-        cout << "Beneficio " << cluster->totalBeneficio << endl;
+        // cout << "Beneficio " << cluster->totalBeneficio << endl;
 
         if (option == 2) {
             cout << "===============IMPRIME CLUSTER " << i + 1 << " ===================" << endl;
@@ -494,7 +525,7 @@ void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
 
     for (int i = 0; i < 100; i++) {
         guloso(limitClusters, 1, &result);
-        cout << "-> " << result << endl;
+        // cout << "-> " << result << endl;
         if (result > maior) {
             maior = result;
         }
@@ -541,7 +572,7 @@ void Graph::printNodes() {
     Node* node = firstNode;
     int cont = 0;
 
-    cout << this->inferiorLimit << " <=  ";
+    /*cout << this->inferiorLimit << " <=  ";
     cout << getLimit() << " <= ";
     cout << this->upperLimit << " ? ";
 
@@ -549,7 +580,7 @@ void Graph::printNodes() {
         cout << "Sim." << endl;
     } else {
         cout << "Nao." << endl;
-    }
+    }*/
 
     while (node != nullptr) {
         cout << node->getId() << ",";
