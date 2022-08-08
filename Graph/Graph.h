@@ -63,6 +63,8 @@ class Graph {
     Edge *insertEdge(Edge *edge);
     Node *insertNode(Node *node);
 
+    float calculateBenefit();
+
     void leituraArquivo();
 
    private:
@@ -73,6 +75,8 @@ class Graph {
     float upperLimit;
     float currentLimit;
     vector<Edge *> vectorOfEdges;
+
+    float totalBeneficio;
 
     // por daniel, para leitura do arquivo
     const string pathArquivoEntrada;
@@ -95,8 +99,8 @@ class Graph {
     template <typename T>
     void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
 
-    void guloso(vector<pair<int, int>> limiteClusters);
-    void imprimeCluster(vector<Graph *> solucao, int option);
+    float guloso(vector<pair<int, int>> limiteClusters);
+    void imprimeCluster(vector<Graph *> solucao, int option, float result);
 };
 
 #endif
