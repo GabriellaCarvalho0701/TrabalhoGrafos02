@@ -347,9 +347,8 @@ float Graph::greedy(vector<pair<int, int>> clutersLimit, bool randomized) {
         int position = i;
         Node* node = nullptr;
 
-
         if (randomized){
-            position = rand() % getCounterOfNodes();
+            int position = rand() % this->getCounterOfNodes();
             node = getNodeIfExist(position);
         } else {
             node = getNodeIfExist(position);
@@ -369,9 +368,7 @@ float Graph::greedy(vector<pair<int, int>> clutersLimit, bool randomized) {
     }
 
     while ( totalVisitedNodes < this->getCounterOfNodes() ){
-
         for (int i=0; i < this->quantidadeClusters && totalVisitedNodes < this->getCounterOfNodes(); i++) {
-
             Graph* cluster = vectorSolutionOfClusters[i];
             priority_queue<pair<float, pair<int, int>>> candidateList;
 

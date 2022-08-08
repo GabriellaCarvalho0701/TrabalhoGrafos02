@@ -58,7 +58,10 @@ int main(int argc, char *argv[]) {
     auto *graph = new Graph(argc, argv);
 
     vector<pair<int, int>> limiteClusters = graph->leituraArquivo();
-    float result = graph->greedy(limiteClusters, 0);
+
+    srand(time(NULL));
+
+    float result = graph->greedy(limiteClusters, 1);
     cout << result << endl;
     //processOperationChoice(graph, limiteClusters);
 
