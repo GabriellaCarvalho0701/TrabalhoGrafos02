@@ -395,7 +395,7 @@ std::streampos inline tamanhoArquivo(fstream& arq) {
     return tam;
 }
 
-void Graph::leituraArquivo() {
+vector<pair<int, int>> Graph::leituraArquivo() {
     fstream arquivoEntrada(static_cast<string>(this->pathArquivoEntrada), std::ios::in);
     if (!arquivoEntrada.is_open()) {
         std::cerr << "\n\t[ERRO] arquivo nao pode ser aberto lerArquivo";
@@ -407,10 +407,11 @@ void Graph::leituraArquivo() {
     arquivoEntrada.read(buffer.get(), bufferSize);
     arquivoEntrada.close();
     std::stringstream fileIn(buffer.get());  // os dados estao aqui
+    vector<pair<int, int>> limiteClusters;
 
     if (this->tipoInstancia == 1)  // RanReal e Sparse
     {
-        this->leituraRanRealeSparse(fileIn);
+        limiteClusters = this->leituraRanRealeSparse(fileIn);
     } else if (this->tipoInstancia == 2)  // Handover
     {
         this->leituraHandover(fileIn);
@@ -420,9 +421,11 @@ void Graph::leituraArquivo() {
     }
 
     criaArestas();
+
+    return limiteClusters;
 }
 
-void Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
+vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     string primeiraLinha;
     getline(fileIn, primeiraLinha);
     vector<pair<int, int>> limitClusters;
@@ -457,7 +460,8 @@ void Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
 
     // imprimeMatrizParaDebug(this->matrizDistancia);
 
-    guloso(limitClusters);
+    // guloso(limitClusters);
+    return limitClusters;
 }
 
 vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& linha) {
@@ -551,7 +555,7 @@ void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
     std::unitbuf(cout);
 }
 
-void Graph::guloso(vector<pair<int, int>> limitClusters) {
+void Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
     vector<Graph*> solucao;
     bool* nosVisitados = new bool[getCounterOfNodes()];
     int contNosVisitados = 0;
@@ -566,7 +570,8 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
         solucao.push_back(cluster);
     }
 
-    srand(time(0));
+    if (randomizado)
+        srand(time(0));
 
     // sorteando aleatoriamente um nó para iniciar cada cluster
     for (int i = 0; i < this->quantidadeClusters; i++) {
@@ -673,13 +678,11 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
         }
     }
 
-    //   imprimeMatrizParaDebug(matrizAux);
+    // cout << "Total nos: Visitados -> " << contNosVisitados << "; Total ->" << getCounterOfNodes() << endl;
+    //    imprimeMatrizParaDebug(matrizAux);
 
     imprimeCluster(solucao, 1);
     imprimeCluster(solucao, 2);
-
-    cout << "Total nos: Visitados -> " << contNosVisitados << "; Total ->" << getCounterOfNodes() << endl;
-
 }
 
 void Graph::imprimeCluster(vector<Graph*> solucao, int option) {
