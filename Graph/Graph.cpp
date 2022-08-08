@@ -660,7 +660,10 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
                     noExterno = getNodeIfExist(parDeNo.first);
                 }
 
-                if (cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit && nosVisitados[noExterno->getId()] == false) {
+                if (
+                    cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit 
+                    && nosVisitados[noExterno->getId()] == false
+                ) {
                     cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
                     cluster->setLimit(noExterno->getWeight());
                     nosVisitados[noExterno->getId()] = true;
@@ -670,17 +673,21 @@ void Graph::guloso(vector<pair<int, int>> limitClusters) {
         }
     }
 
-    cout << "nos: " << contNosVisitados << " " << getCounterOfNodes();
     //   imprimeMatrizParaDebug(matrizAux);
 
     imprimeCluster(solucao, 1);
-    // imprimeCluster(solucao, 2);
+    imprimeCluster(solucao, 2);
+
+    cout << "Total nos: Visitados -> " << contNosVisitados << "; Total ->" << getCounterOfNodes() << endl;
+
 }
 
 void Graph::imprimeCluster(vector<Graph*> solucao, int option) {
-    cout << "===============IMPRIME CLUSTER 1 ===================" << endl;
     for (int i = 0; i < this->quantidadeClusters; i++) {
         Graph* cluster = solucao[i];
+
+        if (option == 2)
+            cout << "===============IMPRIME CLUSTER "<< i+1 << " ===================" << endl;
 
         if (option == 1) {
             cluster->printNodes2();
