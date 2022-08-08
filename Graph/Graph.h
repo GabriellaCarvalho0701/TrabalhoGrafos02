@@ -49,27 +49,12 @@ class Graph {
     Node *createNodeIfDoesntExist(int id, float weight);
     Edge *createEdge(Node *nodeHead, Node *nodeTail, float weight);
 
-    void outputGraph(string outputFileName);
-    void printListAdjacents(int id);
-
-    int *depthSearch(Node *node);
-    void auxDepthSearch(Node *node, int visitedNodes[], int *counter);
-    void treeDeepthSearch(Node *node, string outputFileName);
-    void auxTreeDeepthSearch(Node *node, vector<Node *> &visitedNodes, vector<Edge *> &mainTreeEdge, vector<Edge *> &returnTreeEdge);
-
-    vector<Edge *> edgesMergeSort(vector<Edge *> &edgesToBeMerged);
-
-    bool isNodeInGraph(Node *searchedNode);
-    Edge *insertEdge(Edge *edge);
-    Node *insertNode(Node *node);
-
     float calculateBenefit();
 
     vector<pair<int, int>> leituraArquivo();
 
-    
-    std::vector<std::pair<int, int>> vertices;  // deducao do codigo do stenio
-    std::vector<std::vector<float>> matrizDistancia;
+    vector<pair<int, int>> vertices;
+    vector<vector<float>> matrizDistancia;
     vector<pair<int, int>> processaPrimeiraLinhaRanRealSparse(const string &linha);
 
     vector<pair<int, int>> leituraRanRealeSparse(std::stringstream &fileIn);
@@ -81,7 +66,9 @@ class Graph {
     template <typename T>
     void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
 
-    float guloso(vector<pair<int, int>> limiteClusters, bool randomizado);
+    vector<Graph *> guloso(vector<pair<int, int>> limiteClusters, bool randomizado, float *result);
+    void algGulosoRandAdapt(vector<pair<int, int>> limitClusters);
+    void algGuloso(vector<pair<int, int>> limitClusters);
     void imprimeCluster(vector<Graph *> solucao, int option, float result);
 
    private:
@@ -102,7 +89,6 @@ class Graph {
     const int tipoInstancia;
     int quantidadeClusters;
     string clusterType;
-
 };
 
 #endif

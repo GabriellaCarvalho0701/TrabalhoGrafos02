@@ -150,245 +150,6 @@ Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, float weight) {
     return newEdge;
 }
 
-/*
- * Função verifica se um Edge já esta no grafo. Verifica também se a versão inversa
- * da aresta esta no grafo, uma vez que por definição de enunciado do problemas isso
- * nao pode existir
- *@params: vector<Edge*> insertedEdges: Vetor de arestas onde será testado
- *         Edge* edge: Aresta que se deseja verificar
- *@return: bool isInserted: Se a aresta esta no vetor de arestas
- ****************************************************************/
-bool edgeIsInserted(vector<Edge*> insertedEdges, Edge* edge) {
-    bool isInserted = false;
-    for (int i = 0; i < insertedEdges.size() && !isInserted; i++) {
-        if (
-            insertedEdges[i] == edge ||
-            (insertedEdges[i]->getTailNode() == edge->getHeadNode() && insertedEdges[i]->getHeadNode() == edge->getTailNode())) {
-            isInserted = true;
-        }
-    }
-
-    return isInserted;
-}
-
-/*
- * Função escreve o grafo no arquivo passado. Obs.: Retira as arestas duplicadas
- * dos grafos nao direcionados
- *@params: string outputFileName: Nome do arquivo que será registrado o grafo
- *         bool isWeightedGraph: Informa se trata-se de um grafo ponderado
- *@return:
- ****************************************************************/
-/*
-void Graph::outputGraph(string outputFileName) {
-    Node* node = this->firstNode;
-
-    FILE* outfile = fopen(outputFileName.c_str(), "w+");
-
-    string title;
-    if (!this->getDirected()) {
-        title = "graph { \n";
-    } else {
-        title = "digraph { \n";
-    }
-
-    fwrite(title.c_str(), 1, title.size(), outfile);
-
-    vector<Edge*> insertedEdges;
-
-    while (node != nullptr) {
-        Edge* edge = node->getFirstEdge();
-
-        while (edge != nullptr) {
-            // Id da Aresta (Linha do arquivo em que a aresta é criada)
-            string nodeBase = std::to_string(node->getId());
-            string nodeLinked = std::to_string((edge->getTailNode())->getId());
-
-            string dotNotation = "";
-
-            if (this->isEdgeWeighted()) {
-                string weight = std::to_string(edge->getWeight());
-                if (!this->getDirected()) {
-                    if (!edgeIsInserted(insertedEdges, edge)) {
-                        dotNotation = string(nodeBase) + "--" + string(nodeLinked) + " [weight=\"" + string(weight) + "\"] [label=\"" + string(weight) + "\"];\n";
-                        insertedEdges.emplace_back(edge);
-                    }
-                } else {
-                    dotNotation = string(nodeBase) + "->" + string(nodeLinked) + " [weight=\"" + string(weight) + "\"] [label=\"" + string(weight) + "\"];\n";
-                }
-            } else {
-                if (!this->getDirected()) {
-                    if (!edgeIsInserted(insertedEdges, edge)) {
-                        dotNotation = string(nodeBase) + "--" + string(nodeLinked) + ";\n";
-                        insertedEdges.emplace_back(edge);
-                    }
-                } else {
-                    dotNotation = string(nodeBase) + "->" + string(nodeLinked) + ";\n";
-                }
-            }
-
-            fwrite(dotNotation.c_str(), 1, dotNotation.size(), outfile);
-
-            edge = edge->getNextEdge();
-        }
-
-        node = node->getNextNode();
-    };
-
-    string end = "}";
-
-    fwrite(end.c_str(), 1, end.size(), outfile);
-
-    cout << "O arquivo " << outputFileName << " foi gerado com sucesso. Para visualizar encerre a execucao";
-}*/
-
-/*
- * Função que encontra mostra a lista de adjacências de um nó
- *@params: int id: identificador do vértice a ser mostrada a lista de adjacência
- *
- *@return:
- ****************************************************************/
-void Graph::printListAdjacents(int id) {
-    Node* node = this->getNodeIfExist(id);
-
-    if (node == nullptr) {
-        return;
-    }
-
-    Edge* edge = node->getFirstEdge();
-
-    cout << " Lista de adjacencia do no " << node->getId() << ": " << endl;
-    while (edge != nullptr) {
-        cout << "- No: " << edge->getTailNode()->getId() << endl;
-        edge = edge->getNextEdge();
-    };
-
-    cout << "Fim" << endl;
-}
-
-/*
- * Função que encontra retorna a lista de adjacências de um nó através de um vetor
- que contém os id's dos nós adjacentes
- *@params: int id: identificador do vértice a ser encontrada a lista de adjacência
- *         int *cont: ponteiro para um contador que indicará quantos nós adjacentes o nó dado possui
- *
- *@return: um ponteiro para o vetor de int's (que correspodem aos id's dos nós adjacentes)
- ****************************************************************/
-int* Graph::getAllAdjacents(int id, int* cont) {
-    Node* node = this->getNodeIfExist(id);
-    int* allNodeAdjacents = new int[getCounterOfNodes()];
-
-    if (node == nullptr) {
-        return 0;
-    }
-
-    Edge* edge = node->getFirstEdge();
-
-    while (edge != nullptr) {
-        allNodeAdjacents[*cont] = edge->getTailNode()->getId();
-        (*cont)++;
-        edge = edge->getNextEdge();
-    };
-
-    return allNodeAdjacents;
-}
-
-/*
- * Função que faz a busca em profundidade e retorna um vetor contendo os id's dos
- vértices visitados a partir de um nó dado
- *@params: Node* node: ponteiro de objeto do tipo nó
- *
- *@return: um ponteiro para o vetor de int's (que correspodem aos id's dos vértices visitados)
- ****************************************************************/
-int* Graph::depthSearch(Node* node) {
-    int* cont = 0;
-    int* visitedNodes = new int[this->getCounterOfNodes()];
-    for (int i = 0; i <= this->getCounterOfNodes(); i++) {
-        visitedNodes[i] = 0;
-    }
-
-    auxDepthSearch(node, visitedNodes, cont);
-
-    return visitedNodes;
-}
-
-/*
- * Função que auxiliar da função de busca em profundidade que efetivamente procura
- os nós do grafo em profundidade  a partir de um dado nó
- *@params: Node* node: ponteiro de objeto do tipo nó de onde partirá a busca
- *         int visitedNodes[]: vetor de int's que contém os id's dos vértices visitados
- *         int* cont: ponteiro para um contador que indicará quantos nós foram visitados
- *
- *@return:
- ****************************************************************/
-void Graph::auxDepthSearch(Node* node, int visitedNodes[], int* cont) {
-    cont++;
-    visitedNodes[node->getPkId()] = 1;
-    Edge* edge = node->getFirstEdge();
-
-    while (edge != nullptr) {
-        if (visitedNodes[edge->getTailNode()->getPkId()] == 0) {
-            auxDepthSearch(edge->getTailNode(), visitedNodes, cont);
-        }
-
-        edge = edge->getNextEdge();
-    };
-}
-
-/*
- * Função auxiliar ordernar um vetor de arestas atraves de merge sort
- *@params: vector<Edge *>& vector: vetor de aretas a ser ordenado
-           int start: posicao inicial
-           int mid: meio do vetor
-           int end: final do vetor
- *@return:
- ****************************************************************/
-void mergeSortedIntervals(vector<Edge*>& vetor, int start, int mid, int end) {
-    vector<Edge*> temp;
-
-    int i, j;
-    i = start;
-    j = mid + 1;
-
-    while (i <= mid && j <= end) {
-        if (vetor[i]->getWeight() <= vetor[j]->getWeight()) {
-            temp.push_back(vetor[i]);
-            ++i;
-        } else {
-            temp.push_back(vetor[j]);
-            ++j;
-        }
-    }
-
-    while (i <= mid) {
-        temp.push_back(vetor[i]);
-        ++i;
-    }
-
-    while (j <= end) {
-        temp.push_back(vetor[j]);
-        ++j;
-    }
-
-    for (int i = start; i <= end; ++i)
-        vetor[i] = temp[i - start];
-}
-
-/*
- * Função para ordernar um vetor de arestas atraves de merge sort
- *@params: vector<Edge *>& vector: vetor de aretas a ser ordenado
-           int start: posicao inicial
-           int end: final do vetor
- *@return:
- ****************************************************************/
-void mergeSort(vector<Edge*>& vetor, int start, int end) {
-    if (start < end) {
-        int mid = (start + end) / 2;
-        mergeSort(vetor, start, mid);
-        mergeSort(vetor, mid + 1, end);
-        mergeSortedIntervals(vetor, start, mid, end);
-    }
-}
-
 std::streampos inline tamanhoArquivo(fstream& arq) {
     arq.seekg(0, std::fstream::end);
     std::streampos tam = arq.tellg();
@@ -460,20 +221,6 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     }
 
     // imprimeMatrizParaDebug(this->matrizDistancia);
-
-    float maior = 0;
-    srand(time(NULL));
-
-    for (int i=0; i < 30; i++){
-
-        float result = guloso(limitClusters, true);
-        if (result > maior){
-            maior = result;
-        }
-
-    }
-
-    cout << "Maior => " << maior << endl;
     return limitClusters;
 }
 
@@ -568,8 +315,9 @@ void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
     std::unitbuf(cout);
 }
 
-float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
+vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float* result) {
     vector<Graph*> solucao;
+    *result = 0;
     bool* nosVisitados = new bool[getCounterOfNodes()];
     int contNosVisitados = 0;
 
@@ -587,21 +335,18 @@ float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
         solucao.push_back(cluster);
     }
 
-
     // sorteando aleatoriamente um nó para iniciar cada cluster
     for (int i = 0; i < this->quantidadeClusters; i++) {
         int position = i;
         Node* node = nullptr;
 
-        if (randomizado){
+        if (randomizado) {
             int position = rand() % getCounterOfNodes();
             node = getNodeIfExist(position);
         } else {
             node = getNodeIfExist(position);
-
         }
 
-      
         if (node == nullptr || nosVisitados[position] == true) {
             i--;
             continue;
@@ -615,19 +360,8 @@ float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
         cluster->setLimit(node->getWeight());
     }
 
-    //cout << endl;
-
-    // ordenando a matriz de distancia da aresta de maior beneficio para a de menor
-
-    /*while (!listaCandidatos.empty()) {
-        cout << listaCandidatos.top().first << ": " << listaCandidatos.top().second.first << " , " << listaCandidatos.top().second.second << endl;
-        listaCandidatos.pop();
-    }*/
-
     // adicionando os demais nós aos clusters respeitando os limites
-    
     priority_queue<pair<float, pair<int, int>>> listaCandidatos;
-    //vector<pair<float, pair<int, int>>> listaCandidatos;
 
     // while que garante que os clusters tenham o limite inferior
     for (int i = 0; i < this->quantidadeClusters; i++) {
@@ -655,11 +389,10 @@ float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
             }
 
             if (
-                cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit 
-                && nosVisitados[noExterno->getId()] == false
-            ) {
+                cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit && nosVisitados[noExterno->getId()] == false) {
                 cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
                 cluster->totalBeneficio += distancia;
+                cout << "- " << distancia << endl;
                 resultBeneficio += distancia;
 
                 cluster->setLimit(noExterno->getWeight());
@@ -680,13 +413,10 @@ float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
 
     // while que garante que todos os nós estão nos cluters e garante que os clusters tenham até o limite superior
     while (contNosVisitados < this->getCounterOfNodes() && !listaCandidatos.empty()) {
-        
-        
         pair<float, pair<int, int>> candidato = listaCandidatos.top();
         float distancia = candidato.first;
         pair<int, int> parDeNo = candidato.second;
         listaCandidatos.pop();
-
 
         if (
             !(nosVisitados[parDeNo.first] == true && nosVisitados[parDeNo.second] == true) &&
@@ -703,9 +433,7 @@ float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
                 }
 
                 if (
-                    cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit 
-                    && nosVisitados[noExterno->getId()] == false
-                ) {
+                    cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit && nosVisitados[noExterno->getId()] == false) {
                     cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
                     cluster->totalBeneficio += distancia;
                     resultBeneficio += distancia;
@@ -718,33 +446,71 @@ float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
     }
 
     // cout << "Total nos: Visitados -> " << contNosVisitados << "; Total ->" << getCounterOfNodes() << endl;
-    //    imprimeMatrizParaDebug(matrizAux);
+    //     imprimeMatrizParaDebug(matrizAux);
 
-    //imprimeCluster(solucao, 1, resultBeneficio);
-    //imprimeCluster(solucao, 2, resultBeneficio);
+    // imprimeCluster(solucao, 1, resultBeneficio);
+    //   imprimeCluster(solucao, 2, resultBeneficio);
+
+    *result = resultBeneficio;
+    return solucao;
 }
 
 void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBeneficio) {
     for (int i = 0; i < this->quantidadeClusters; i++) {
         Graph* cluster = solucao[i];
-                    cout << "Beneficio " << cluster->totalBeneficio << endl;
+        cout << "Beneficio " << cluster->totalBeneficio << endl;
 
-        // if (option == 2){
-        //     cout << "===============IMPRIME CLUSTER "<< i+1 << " ===================" << endl;
-        //     cout << "Beneficio " << cluster->totalBeneficio << endl;
-        // }
+        if (option == 2) {
+            cout << "===============IMPRIME CLUSTER " << i + 1 << " ===================" << endl;
+            cout << "Beneficio " << cluster->totalBeneficio << endl;
+        }
 
-        // if (option == 1) {
-        //     cluster->printNodes2();
-        // } else if (option == 2) {
-        //     cluster->printNodes();
-        // }
-        
-        // cout << endl;
+        if (option == 1) {
+            cluster->printNodes();
+        } else if (option == 2) {
+            cluster->printNodes2();
+        }
+
+        cout << endl;
+    }
+}
+
+void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
+    time_t start, end;
+    time(&start);
+
+    float maior = 0;
+    float result;
+    srand(time(NULL));
+
+    for (int i = 0; i < 100; i++) {
+        guloso(limitClusters, 1, &result);
+        cout << "-> " << result << endl;
+        if (result > maior) {
+            maior = result;
+        }
     }
 
-    // if (option == 2)
-    //     cout << " ======================= \n\nResultado Final = " << resultBeneficio << endl;
+    time(&end);
+    double time = double(end - start);
+    cout << "Tempo de Execucao: " << time << endl;
+
+    cout << "Melhor Solucao: " << maior << endl;
+}
+
+void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
+    time_t start, end;
+    time(&start);
+
+    float result = 0;
+
+    vector<Graph*> sol = guloso(limitClusters, 0, &result);
+
+    /*time(&end);
+    double time = double(end - start);
+    cout << "Tempo de Execucao: " << time << endl;*/
+
+    imprimeCluster(sol, 2, result);
 }
 
 void Graph::printNodes2() {
@@ -762,12 +528,6 @@ void Graph::printNodes2() {
     // cout << "Fim" << endl;
 }
 
-/*
- * Função escreve todos os nós do grafo no terminal
- *@params:
- *
- *@return:
- ****************************************************************/
 void Graph::printNodes() {
     Node* node = firstNode;
     int cont = 0;
@@ -787,7 +547,6 @@ void Graph::printNodes() {
         node = node->getNextNode();
         cont++;
     }
-
 }
 
 // float Graph::calculateBenefit(){
