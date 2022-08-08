@@ -65,7 +65,23 @@ class Graph {
 
     float calculateBenefit();
 
-    void leituraArquivo();
+    vector<pair<int, int>> leituraArquivo();
+
+    std::vector<std::pair<int, int>> vertices;  // deducao do codigo do stenio
+    std::vector<std::vector<float>> matrizDistancia;
+    vector<pair<int, int>> processaPrimeiraLinhaRanRealSparse(const string &linha);
+
+    vector<pair<int, int>> leituraRanRealeSparse(std::stringstream &fileIn);
+
+    void leituraHandover(std::stringstream &fileIn);
+
+    void criaArestas();
+
+    template <typename T>
+    void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
+
+    void guloso(vector<pair<int, int>> limiteClusters, bool randomizado);
+    void imprimeCluster(vector<Graph *> solucao, int option);
 
    private:
     Node *firstNode;
