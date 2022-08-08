@@ -4,4 +4,4 @@ project(Trabalho2)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(Trabalho2
-        main.cpp)
+        main.cpp Timer/Timer.h)

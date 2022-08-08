@@ -25,19 +25,22 @@ void processOperationChoice(Graph *graph, vector<pair<int, int>> limiteClusters)
     cin >> option;
     cout << "\n";
 
-    int no, noDest;
     Graph *newGraph;
     
     switch (option) {
         case 1:
             cout << "Algoritmo Guloso" << endl;
-            graph->guloso(limiteClusters, 0);
+            graph->algGuloso(limiteClusters);
             break;
         case 2:
-            cout << "Algoritmo Guloso Randomizado Adaptativo" << endl;
-            graph->guloso(limiteClusters, 1);
+            cout << "Algoritmo Guloso Randomizado" << endl;
+            graph->algGuloso(limiteClusters);
             break;
         case 3:
+            cout << "Algoritmo Guloso Randomizado Adaptativo" << endl;
+            graph->algGulosoRandAdapt(limiteClusters);
+            break;
+        case 4:
             break;
         default:
             processOperationChoice(graph, limiteClusters);
