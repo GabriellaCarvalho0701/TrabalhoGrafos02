@@ -444,7 +444,7 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     float beneficio = 0;
 
     while (getline(fileIn, linha, '\n')) {
-        if (linha.empty() || linha.find('\r') != string::npos) {
+        if (linha.empty() || linha.find("\r\n") != string::npos) {
             break;
         }
 
@@ -665,7 +665,10 @@ void Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
                     noExterno = getNodeIfExist(parDeNo.first);
                 }
 
-                if (cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit && nosVisitados[noExterno->getId()] == false) {
+                if (
+                    cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit 
+                    && nosVisitados[noExterno->getId()] == false
+                ) {
                     cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
                     cluster->setLimit(noExterno->getWeight());
                     nosVisitados[noExterno->getId()] = true;
@@ -675,7 +678,7 @@ void Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
         }
     }
 
-    // cout << "nos: " << contNosVisitados << " " << getCounterOfNodes();
+    // cout << "Total nos: Visitados -> " << contNosVisitados << "; Total ->" << getCounterOfNodes() << endl;
     //    imprimeMatrizParaDebug(matrizAux);
 
     imprimeCluster(solucao, 1);
@@ -683,9 +686,11 @@ void Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
 }
 
 void Graph::imprimeCluster(vector<Graph*> solucao, int option) {
-    cout << "===============IMPRIME CLUSTER 1 ===================" << endl;
     for (int i = 0; i < this->quantidadeClusters; i++) {
         Graph* cluster = solucao[i];
+
+        if (option == 2)
+            cout << "===============IMPRIME CLUSTER "<< i+1 << " ===================" << endl;
 
         if (option == 1) {
             cluster->printNodes2();
