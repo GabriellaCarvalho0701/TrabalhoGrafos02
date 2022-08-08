@@ -155,14 +155,13 @@ Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, float weight) {
     return newEdge;
 }
 
-long inline tamanhoArquivo(fstream& arq)
-{
-    arq.ignore( std::numeric_limits<std::streamsize>::max() );
-    std::streamsize length = arq.gcount();
-    arq.clear();
-    arq.seekg( 0, std::ios_base::beg );
-    return length;
+std::streampos inline tamanhoArquivo(fstream& arq) {
+    arq.seekg(0, std::fstream::end);
+    std::streampos tam = arq.tellg();
+    arq.seekg(0);
+    return tam;
 }
+
 
 vector<pair<int, int>> Graph::leituraArquivo() {
     fstream arquivoEntrada(static_cast<string>(this->pathArquivoEntrada), std::ios::in);
@@ -171,12 +170,17 @@ vector<pair<int, int>> Graph::leituraArquivo() {
         exit(10);
     }
 
+
+
     auto bufferSize = tamanhoArquivo(arquivoEntrada);
+
     std::unique_ptr<char[]> buffer(new char[bufferSize]);
     arquivoEntrada.read(buffer.get(), bufferSize);
     arquivoEntrada.close();
     std::stringstream fileIn(buffer.get());  // os dados estao aqui
     vector<pair<int, int>> limiteClusters;
+
+
 
     if (this->tipoInstancia == 1)  // RanReal e Sparse
     {
@@ -190,6 +194,7 @@ vector<pair<int, int>> Graph::leituraArquivo() {
     }
 
     criaArestas();
+
 
     return limiteClusters;
 }
@@ -365,8 +370,8 @@ float Graph::greedy(vector<pair<int, int>> clutersLimit, bool randomized) {
 
     while ( totalVisitedNodes < this->getCounterOfNodes() ){
 
-        for (int i=0; i < this->quantidadeClusters; i++) {
-            cout << i;
+        for (int i=0; i < this->quantidadeClusters && totalVisitedNodes < this->getCounterOfNodes(); i++) {
+
             Graph* cluster = vectorSolutionOfClusters[i];
             priority_queue<pair<float, pair<int, int>>> candidateList;
 
@@ -396,6 +401,8 @@ float Graph::greedy(vector<pair<int, int>> clutersLimit, bool randomized) {
             ) {
                 cluster->createNodeIfDoesntExist(externalNode->getId(), externalNode->getWeight());
                 cluster->incrementLimit(externalNode->getWeight());
+                totalBenefit += benefit;
+
                 visitedNodes[externalNode->getId()] = true;
                 totalVisitedNodes++;
             }

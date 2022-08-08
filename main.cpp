@@ -56,9 +56,11 @@ void processOperationChoice(Graph *graph, vector<pair<int, int>> limiteClusters)
  ****************************************************************/
 int main(int argc, char *argv[]) {
     auto *graph = new Graph(argc, argv);
-    vector<pair<int, int>> limiteClusters = graph->leituraArquivo();
 
-    processOperationChoice(graph, limiteClusters);
+    vector<pair<int, int>> limiteClusters = graph->leituraArquivo();
+    float result = graph->greedy(limiteClusters, 0);
+    cout << result << endl;
+    //processOperationChoice(graph, limiteClusters);
 
     return 0;
 }
