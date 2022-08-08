@@ -464,14 +464,13 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     float maior = 0;
     srand(time(NULL));
 
-    for (int i=0; i < 100; i++){
+    for (int i=0; i < 30; i++){
 
-        float result = // guloso(limitClusters);
+        float result = guloso(limitClusters, true);
         if (result > maior){
             maior = result;
         }
 
-        // cout << i << " -> " << result << endl;
     }
 
     cout << "Maior => " << maior << endl;
@@ -588,24 +587,31 @@ float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
         solucao.push_back(cluster);
     }
 
-    if (randomizado)
 
     // sorteando aleatoriamente um nó para iniciar cada cluster
     for (int i = 0; i < this->quantidadeClusters; i++) {
-        int idRand = rand() % getCounterOfNodes();
-        //cout << idRand << ", ";
-        Node* node = getNodeIfExist(idRand);
+        int position = i;
+        Node* node = nullptr;
 
-        if (node == nullptr || nosVisitados[idRand] == true) {
+        if (randomizado){
+            int position = rand() % getCounterOfNodes();
+            node = getNodeIfExist(position);
+        } else {
+            node = getNodeIfExist(position);
+
+        }
+
+      
+        if (node == nullptr || nosVisitados[position] == true) {
             i--;
             continue;
         }
 
-        nosVisitados[idRand] = true;
+        nosVisitados[position] = true;
         contNosVisitados++;
 
         Graph* cluster = solucao[i];
-        cluster->createNodeIfDoesntExist(idRand, node->getWeight());
+        cluster->createNodeIfDoesntExist(position, node->getWeight());
         cluster->setLimit(node->getWeight());
     }
 
@@ -714,8 +720,8 @@ float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {
     // cout << "Total nos: Visitados -> " << contNosVisitados << "; Total ->" << getCounterOfNodes() << endl;
     //    imprimeMatrizParaDebug(matrizAux);
 
-    imprimeCluster(solucao, 1);
-    imprimeCluster(solucao, 2);
+    //imprimeCluster(solucao, 1, resultBeneficio);
+    //imprimeCluster(solucao, 2, resultBeneficio);
 }
 
 void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBeneficio) {

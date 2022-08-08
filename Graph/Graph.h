@@ -67,6 +67,7 @@ class Graph {
 
     vector<pair<int, int>> leituraArquivo();
 
+    
     std::vector<std::pair<int, int>> vertices;  // deducao do codigo do stenio
     std::vector<std::vector<float>> matrizDistancia;
     vector<pair<int, int>> processaPrimeiraLinhaRanRealSparse(const string &linha);
@@ -80,8 +81,8 @@ class Graph {
     template <typename T>
     void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
 
-    void guloso(vector<pair<int, int>> limiteClusters, bool randomizado);
-    void imprimeCluster(vector<Graph *> solucao, int option);
+    float guloso(vector<pair<int, int>> limiteClusters, bool randomizado);
+    void imprimeCluster(vector<Graph *> solucao, int option, float result);
 
    private:
     Node *firstNode;
@@ -102,21 +103,6 @@ class Graph {
     int quantidadeClusters;
     string clusterType;
 
-    std::vector<std::pair<int, int>> vertices;  // deducao do codigo do stenio
-    std::vector<std::vector<float>> matrizDistancia;
-    vector<pair<int, int>> processaPrimeiraLinhaRanRealSparse(const string &linha);
-
-    void leituraRanRealeSparse(std::stringstream &fileIn);
-
-    void leituraHandover(std::stringstream &fileIn);
-
-    void criaArestas();
-
-    template <typename T>
-    void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
-
-    float guloso(vector<pair<int, int>> limiteClusters);
-    void imprimeCluster(vector<Graph *> solucao, int option, float result);
 };
 
 #endif
