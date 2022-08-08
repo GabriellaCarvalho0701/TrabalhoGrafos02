@@ -441,7 +441,7 @@ void Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     float beneficio = 0;
 
     while (getline(fileIn, linha, '\n')) {
-        if (linha.empty() || linha.find('\r') != string::npos) {
+        if (linha.empty() || linha.find("\r\n") != string::npos) {
             break;
         }
 
