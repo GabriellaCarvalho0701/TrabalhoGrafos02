@@ -27,7 +27,7 @@ void processOperationChoice(Graph *graph, vector<pair<int, int>> limiteClusters)
 
     int no, noDest;
     Graph *newGraph;
-
+    
     switch (option) {
         case 1:
             cout << "Algoritmo Guloso" << endl;

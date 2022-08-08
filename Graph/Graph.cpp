@@ -76,6 +76,10 @@ void Graph::setLimit(int limit) {
     this->currentLimit += limit;
 }
 
+void Graph::incrementLimit(int valueToBeIncremented){
+    this->currentLimit += valueToBeIncremented;
+}
+
 int Graph::getLimit() {
     return currentLimit;
 }
@@ -461,20 +465,6 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
 
     // imprimeMatrizParaDebug(this->matrizDistancia);
 
-    float maior = 0;
-    srand(time(NULL));
-
-    for (int i=0; i < 30; i++){
-
-        float result = guloso(limitClusters, true);
-        if (result > maior){
-            maior = result;
-        }
-
-    }
-
-    cout << "Maior => " << maior << endl;
-    return limitClusters;
 }
 
 vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& linha) {
@@ -566,6 +556,97 @@ void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
     }
     // restore buf to cout
     std::unitbuf(cout);
+}
+
+float Graph::greedy(vector<pair<int, int>> clutersLimit, bool randomized) {
+    vector<Graph*> vectorSolutionOfClusters;
+    bool* visitedNodes = new bool(this->getCounterOfNodes());
+    int totalVisitedNodes = 0;
+    
+    float totalBenefit = 0;
+
+    for (int i = 0; i < this->getCounterOfNodes(); i++)
+        visitedNodes[i] = false;
+
+    for (int i = 0; i < this->quantidadeClusters; i++) {
+                cout << i;
+
+        pair<int, int> clusterLimit = clutersLimit.at(i);
+        Graph* cluster = new Graph(clusterLimit.first, clusterLimit.second);
+        vectorSolutionOfClusters.push_back(cluster);
+    }
+
+    for (int i = 0; i < this->quantidadeClusters; i++) {
+        int position = i;
+        Node* node = nullptr;
+
+
+        if (randomized){
+            position = rand() % getCounterOfNodes();
+            node = getNodeIfExist(position);
+        } else {
+            node = getNodeIfExist(position);
+        }
+
+      
+        if (node != nullptr && visitedNodes[position] != true) {
+            Graph* cluster = vectorSolutionOfClusters[i];
+
+            cluster->createNodeIfDoesntExist(position, node->getWeight());
+            cluster->incrementLimit(node->getWeight());
+
+            visitedNodes[position] = true;
+            totalVisitedNodes++;
+        }
+
+    }
+
+    while ( totalVisitedNodes < this->getCounterOfNodes() ){
+
+        for (int i=0; i < this->quantidadeClusters; i++) {
+            cout << i;
+            Graph* cluster = vectorSolutionOfClusters[i];
+            priority_queue<pair<float, pair<int, int>>> candidateList;
+
+            int cluisterNodeId = cluster->getFirstNode()->getId();
+            
+            for (int j = 0; j < this->getCounterOfNodes(); j++) {
+                if (!visitedNodes[j])
+                    candidateList.push(make_pair(matrizDistancia[cluisterNodeId][j], make_pair(cluisterNodeId, j)));
+            }
+
+            pair<float, pair<int, int>> candidate = candidateList.top();
+            float benefit = candidate.first;
+            pair<int, int> nodePair = candidate.second;
+            candidateList.pop();
+
+            Node* graphNode = cluster->getNodeIfExist(nodePair.first);
+            Node* externalNode = getNodeIfExist(nodePair.second);
+
+            if (graphNode == nullptr) {
+                graphNode = cluster->getNodeIfExist(nodePair.second);
+                externalNode = getNodeIfExist(nodePair.first);
+            }
+
+            if (
+                cluster->getLimit() + externalNode->getWeight() <= cluster->upperLimit 
+                && visitedNodes[externalNode->getId()] == false
+            ) {
+                cluster->createNodeIfDoesntExist(externalNode->getId(), externalNode->getWeight());
+                cluster->incrementLimit(externalNode->getWeight());
+                visitedNodes[externalNode->getId()] = true;
+                totalVisitedNodes++;
+            }
+
+
+        }
+
+cout<< endl;
+    }
+
+    cout << "Saida";
+
+    return totalBenefit;
 }
 
 float Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado) {

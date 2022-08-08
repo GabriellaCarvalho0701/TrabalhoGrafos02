@@ -82,7 +82,9 @@ class Graph {
     void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
 
     float guloso(vector<pair<int, int>> limiteClusters, bool randomizado);
+    float greedy(vector<pair<int, int>> limiteClusters, bool randomizado);
     void imprimeCluster(vector<Graph *> solucao, int option, float result);
+    void incrementLimit(int valueToBeIncremented);
 
    private:
     Node *firstNode;
