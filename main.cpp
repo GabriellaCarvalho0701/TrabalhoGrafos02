@@ -38,6 +38,7 @@ void processOperationChoice(Graph *graph, vector<pair<int, int>> limiteClusters)
             break;
         case 3:
             cout << "Algoritmo Guloso Randomizado Reativo" << endl;
+            graph->algGulosoReativo(limiteClusters);
             break;
         default:
             processOperationChoice(graph, limiteClusters);
