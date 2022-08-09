@@ -15,6 +15,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <iomanip> 
 
 using std::cout;
 using std::endl;
@@ -496,13 +497,15 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
 }
 
 void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBeneficio) {
+    float totalBeneficio = 0.0;
+
     for (int i = 0; i < this->quantidadeClusters; i++) {
         Graph* cluster = solucao[i];
-        // cout << "Beneficio " << cluster->totalBeneficio << endl;
 
         if (option == 2) {
             cout << "===============IMPRIME CLUSTER " << i + 1 << " ===================" << endl;
             cout << "Beneficio " << cluster->totalBeneficio << endl;
+            totalBeneficio += cluster->totalBeneficio;
         }
 
         if (option == 1) {
@@ -513,6 +516,10 @@ void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBenef
 
         cout << endl;
     }
+
+    if (option == 2)
+        cout << std::setprecision(2) << std::fixed;
+        cout << "\n\nBeneficio final: " << totalBeneficio << endl;
 }
 
 void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
@@ -557,8 +564,8 @@ void Graph::printNodes2() {
     Node* node = firstNode;
     int cont = 0;
 
-    // cout << "Limite: " << getLimit() << endl;
-
+    cout << "Limite | " << this->inferiorLimit << " <= " << this->getLimit() << " <= " << this->upperLimit << ""  <<endl;
+    
     while (node != nullptr) {
         cout << node->getId() << ",";
         node = node->getNextNode();
