@@ -10,7 +10,7 @@
 
 using namespace std;
 
-streampos inline tamanhoArquivo(fstream &arq)
+streampos inline tamanhoArquivoHandover(fstream &arq)
 {
     arq.seekg(0, std::fstream::end);
     streampos tam = arq.tellg();
@@ -63,7 +63,7 @@ void LeituraRanRealeSparse(const string &path_file)
         exit(10);
     }
 
-    auto bufferSize = tamanhoArquivo(arquivoEntrada);
+    auto bufferSize = tamanhoArquivoHandover(arquivoEntrada);
     unique_ptr<char[]> buffer(new char[bufferSize]);
     arquivoEntrada.read(buffer.get(), bufferSize);
     arquivoEntrada.close();
@@ -98,7 +98,7 @@ void ReadHandover(const string &path_file)
         exit(10);
     }
 
-    auto bufferSize = tamanhoArquivo(arquivoEntrada);
+    auto bufferSize = tamanhoArquivoHandover(arquivoEntrada);
     unique_ptr<char[]> buffer(new char[bufferSize]);
     arquivoEntrada.read(buffer.get(), bufferSize);
     arquivoEntrada.close();

@@ -160,6 +160,7 @@ long inline tamanhoArquivo(fstream& arq) {
     std::streamsize length = arq.gcount();
     arq.clear();
     arq.seekg( 0, std::ios_base::beg );
+
     return length;
 }
 
