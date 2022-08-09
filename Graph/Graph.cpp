@@ -1,5 +1,6 @@
 #include "Graph.h"
 
+#include <math.h>
 #include <time.h>
 
 #include <cstdlib>
@@ -156,10 +157,10 @@ Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, float weight) {
 }
 
 long inline tamanhoArquivo(fstream& arq) {
-    arq.ignore( std::numeric_limits<std::streamsize>::max() );
+    arq.ignore(std::numeric_limits<std::streamsize>::max());
     std::streamsize length = arq.gcount();
     arq.clear();
-    arq.seekg( 0, std::ios_base::beg );
+    arq.seekg(0, std::ios_base::beg);
 
     return length;
 }
@@ -190,8 +191,7 @@ vector<pair<int, int>> Graph::leituraArquivo() {
     }
 
     criaArestas();
-    for (int i = 0; i < this->nodesTotal; ++i)
-    {
+    for (int i = 0; i < this->nodesTotal; ++i) {
         this->matrizDistancia[i][i] = 0.0f;
     }
     return limiteClusters;
@@ -253,13 +253,11 @@ vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& l
     }
 
     // get node weights
-    for (int i = 0; i < nodesTotalOriginal; i++)
-    {
+    for (int i = 0; i < nodesTotalOriginal; i++) {
         float nodeWeight = stof(tokens[4 + quantidadeClusters * 2 + i]);
         this->createNodeIfDoesntExist(i, nodeWeight);
         this->vertices.emplace_back(i, nodeWeight);
     }
-
 
     return clustersLimites;
 }
@@ -322,7 +320,7 @@ void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
     std::unitbuf(cout);
 }
 
-vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float* result, float semente) {
+vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float* result, float alfa) {
     vector<Graph*> solucao;
     *result = 0;
     bool* nosVisitados = new bool[getCounterOfNodes()];
@@ -351,10 +349,8 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
         int position = i;
         Node* node = nullptr;
 
-        if (randomizado) {
-            position = (int)(rand() % ((int)(semente * getCounterOfNodes())));
-            cout << "- " << position << ", ";
-        }
+        if (randomizado)
+            position = (int)(rand() % ((int)(alfa * getCounterOfNodes())));
 
         node = getNodeIfExist(position);
 
@@ -369,10 +365,7 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
         Graph* cluster = solucao[i];
         cluster->createNodeIfDoesntExist(position, node->getWeight());
         cluster->setLimit(node->getWeight());
-        cout << "-- " << cluster->getFirstNode()->getId() << " " << position << endl;
     }
-
-    cout << endl;
 
     // adicionando os demais nós aos clusters respeitando os limites
     priority_queue<pair<float, pair<int, int>>> listaCandidatos;
@@ -500,49 +493,6 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
 constexpr int FLOAT_MIN = 0;
 constexpr int FLOAT_MAX = 1;
 
-void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
-    time_t start, end;
-    time(&start);
-
-    float maior = 0;
-    float result, semente;
-    vector<Graph*> sol;
-
-    srand(time(nullptr));
-    for (int i = 0; i < rand(); i++)
-        semente = FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN)));
-
-    cout << "Semente de randomizacao: " << semente << endl;
-
-    for (int i = 0; i < 1; i++) {
-        guloso(limitClusters, 1, &result, semente);
-        if (result > maior) {
-            maior = result;
-            cout << sol.size();
-            for (int i = 0; i < sol.size(); i++)
-                sol[i] = nullptr;
-            sol = guloso(limitClusters, 1, &result, semente);
-        }
-    }
-
-    imprimeCluster(sol, 2, maior);
-
-    time(&end);
-
-    cout << std::setprecision(2) << std::fixed;
-    double time = double(end - start);
-    cout << "Tempo de Execucao: " << time << " s" << endl;
-    cout << "Melhor Solucao: " << maior << endl;
-    cout << "Qualidade Solucao: " << qualidadeSolucao(maior) << "%" << endl;
-    if (maior > 0) {
-        cout << "Conseguiu alguma solucao viavel" << endl;
-    } else {
-        cout << "Nao conseguiu nenhuma solucao viavel" << endl;
-    }
-
-    output("AlgoritmoGulosoRandomizadoAdaptativo.txt", sol, qualidadeSolucao(maior));
-}
-
 void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
     time_t start, end;
     time(&start);
@@ -566,20 +516,178 @@ void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
     output("AlgoritmoGuloso.txt", sol, qualidadeSolucao(result));
 }
 
+void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
+    time_t start, end;
+    time(&start);
+
+    float maior = 0;
+    float result, semente;
+    vector<Graph*> sol, melhorSol;
+
+    srand(time(nullptr));
+    for (int i = 0; i < rand(); i++)
+        semente = FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN)));
+
+    cout << "Semente de randomizacao: " << semente << endl;
+
+    for (int i = 0; i < 100; i++) {
+        sol = guloso(limitClusters, 1, &result, semente);
+        if (result > maior) {
+            maior = result;
+            melhorSol = sol;
+        }
+    }
+
+    imprimeCluster(sol, 2, maior);
+
+    time(&end);
+
+    cout << std::setprecision(2) << std::fixed;
+    double time = double(end - start);
+    cout << "Tempo de Execucao: " << time << " s" << endl;
+    cout << "Melhor Solucao: " << maior << endl;
+    cout << "Qualidade Solucao: " << qualidadeSolucao(maior) << "%" << endl;
+    if (maior > 0) {
+        cout << "Conseguiu alguma solucao viavel" << endl;
+    } else {
+        cout << "Nao conseguiu nenhuma solucao viavel" << endl;
+    }
+
+    output("AlgoritmoGulosoRandomizadoAdaptativo.txt", melhorSol, qualidadeSolucao(maior));
+}
+
+struct media {
+    float soma;
+    float numSolucoes;
+    float media;
+};
+
+void inicializaVetores(vector<float>& prob, vector<media>& medias, int& numAlfas) {
+    media aux;
+    aux.soma = 0;
+    aux.numSolucoes = 0;
+    aux.media = 1;
+    float auxNumAlfas = numAlfas;
+
+    float auxProb = 1 / auxNumAlfas;
+
+    for (int i = 0; i < numAlfas; i++) {
+        prob.push_back(auxProb);
+        medias.push_back(aux);
+    }
+}
+
+void atualizaProbabilidades(vector<media>& medias, vector<float>& prob, vector<float>& solBest, vector<float>& q) {
+    float somaQ = 0;
+
+    for (int i = 0; i < medias.size(); i++) {
+        q[i] = pow((solBest[i] / medias[i].media), 100);
+        somaQ = somaQ + q[i];
+    }
+
+    for (int i = 0; i < medias.size(); i++) {
+        prob[i] = q[i] / somaQ;
+    }
+}
+
+int escolheAlfa(vector<float>& prob) {
+    int alfaIndex;
+    int auxIndex;
+    vector<int> aux;
+
+    for (int i = 0; i < prob.size(); i++) {
+        for (int j = 0; j < (int)(prob[i] * 100); j++) {
+            aux.push_back(i);
+        }
+    }
+
+    auxIndex = rand() % aux.size();
+    alfaIndex = aux[auxIndex];
+
+    return alfaIndex;
+}
+
+void atualizaMedias(vector<media>& medias, int solucao, vector<float>& alfas, float alfa) {
+    int aux;
+    float auxSolucao;
+
+    auxSolucao = solucao;
+
+    for (int i = 0; i < alfas.size(); i++) {
+        if (alfa == alfas[i]) {
+            aux = i;
+            break;
+        }
+    }
+
+    medias[aux].soma = medias[aux].soma + auxSolucao;
+    medias[aux].numSolucoes++;
+    medias[aux].media = medias[aux].soma / medias[aux].numSolucoes;
+}
+
 void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
     time_t start, end;
     time(&start);
 
-    vector<float> alfas, solBest, medias, probabilidade, q;
+    vector<float> alfas, solBest, probabilidade, q;
+    vector<media> medias;
+    int numIt = 60;
+    int numBloco = 30;
+    int numAlfas = 5;
+    int index;
+    float solucao;
+    float auxAlfa;
 
-    for (int i = 0; i < rand(); i++)
-        alfas.push_back(FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN))));
+    for (int i = 0; i < numAlfas; i++) {
+        q.push_back(0.00);
+        solBest.push_back(0.00);
+    }
 
     alfas.push_back(0.05);
     alfas.push_back(0.10);
     alfas.push_back(0.15);
     alfas.push_back(0.30);
     alfas.push_back(0.50);
+
+    inicializaVetores(probabilidade, medias, numAlfas);
+
+    for (int i = 0; i < numIt; i++) {
+        if (i != 0 && i % numBloco == 0) {
+            atualizaProbabilidades(medias, probabilidade, solBest, q);
+        }
+
+        int index = escolheAlfa(probabilidade);
+        auxAlfa = alfas[index];
+
+        /**/
+
+        float maiorBeneficio = 0;
+        float result, semente;
+        vector<Graph*> sol, melhorSol;
+        sol = guloso(limitClusters, 1, &result, alfas[index]);
+        if (result > maiorBeneficio) {
+            maiorBeneficio = result;
+            melhorSol = sol;
+        }
+
+        /**/
+
+        atualizaMedias(medias, maiorBeneficio, alfas, auxAlfa);
+
+        if (solBest[index] == 0 || solBest[index] > maiorBeneficio) {
+            solBest[index] = maiorBeneficio;
+        }
+    }
+
+    int auxSolBest = 0;
+    for (int i = 0; i < solBest.size(); i++) {
+        if (solBest[i] > auxSolBest) {
+            auxSolBest = solBest[i];
+        }
+    }
+
+    // double temp = fimProces(&inicio, &fim);
+    cout << "Melhor Solucao: " << auxSolBest << endl;
 
     // imprimeCluster(sol, 2, result);
 }
