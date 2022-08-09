@@ -39,8 +39,6 @@ class Graph {
 
     void setFirstNode(Node *node);
     Node *getFirstNode();
-    void printNodes();
-    void printNodes2();
 
     int *getAllAdjacents(int id, int *cont);
     Node *getNodeIfExist(int id);
@@ -70,8 +68,12 @@ class Graph {
     void algGulosoRandAdapt(vector<pair<int, int>> limitClusters);
     void algGuloso(vector<pair<int, int>> limitClusters);
     void algGulosoReativo(vector<pair<int, int>> limitClusters);
-    void imprimeCluster(vector<Graph *> solucao, int option, float result);
     float qualidadeSolucao(float resultadoObtido);
+
+    void imprimeCluster(vector<Graph *> solucao, int option, float result);
+    void output(string outputFileName, vector<Graph *> solucao, float qualidadeSolucao);
+    void printNodes();
+    void printNodes2();
 
    private:
     Node *firstNode;
