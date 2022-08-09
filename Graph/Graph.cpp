@@ -155,11 +155,12 @@ Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, float weight) {
     return newEdge;
 }
 
-std::streampos inline tamanhoArquivo(fstream& arq) {
-    arq.seekg(0, std::fstream::end);
-    std::streampos tam = arq.tellg();
-    arq.seekg(0);
-    return tam;
+long inline tamanhoArquivo(fstream& arq) {
+    arq.ignore( std::numeric_limits<std::streamsize>::max() );
+    std::streamsize length = arq.gcount();
+    arq.clear();
+    arq.seekg( 0, std::ios_base::beg );
+    return length;
 }
 
 vector<pair<int, int>> Graph::leituraArquivo() {
@@ -188,7 +189,10 @@ vector<pair<int, int>> Graph::leituraArquivo() {
     }
 
     criaArestas();
-
+    for (int i = 0; i < this->nodesTotal; ++i)
+    {
+        this->matrizDistancia[i][i] = 0.0f;
+    }
     return limiteClusters;
 }
 
@@ -200,18 +204,14 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     limitClusters = processaPrimeiraLinhaRanRealSparse(primeiraLinha);  // resgata informacoes basicas do grafo
 
     // resize matriz distancia
-    this->matrizDistancia.resize(this->getCounterOfNodes());
-    for (int i = 0; i < this->getCounterOfNodes(); i++) {
-        this->matrizDistancia[i].resize(this->getCounterOfNodes());
-    }
+    this->matrizDistancia.resize(this->getCounterOfNodes(), vector<float>(this->getCounterOfNodes(), 0.0f));
 
     // processo restante das arestas
     string linha;
     int verticeFonte = 0, verticeAlvo = 0;
-    float beneficio = 0;
-
+    float beneficio = 0.0f;
     while (getline(fileIn, linha, '\n') && !fileIn.eof()) {
-        if (linha.empty() || linha.find("\r\n") != string::npos) {
+        if (linha.empty()) {
             break;
         }
 
@@ -219,9 +219,6 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
         linhaStream >> verticeFonte;
         linhaStream >> verticeAlvo;
         linhaStream >> beneficio;
-
-        // cout << verticeAlvo << "--> " << verticeFonte << endl;
-
         matrizDistancia[verticeFonte][verticeAlvo] = beneficio;
         matrizDistancia[verticeAlvo][verticeFonte] = beneficio;
 
@@ -255,13 +252,13 @@ vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& l
     }
 
     // get node weights
-    int contVertices = 0;
-    for (int i = 0; i < nodesTotalOriginal; i++) {
+    for (int i = 0; i < nodesTotalOriginal; i++)
+    {
         float nodeWeight = stof(tokens[4 + quantidadeClusters * 2 + i]);
-        this->createNodeIfDoesntExist(i, nodeWeight);  // remover essa linha?
-        this->vertices.emplace_back(contVertices, nodeWeight);
-        ++contVertices;
+        this->createNodeIfDoesntExist(i, nodeWeight);
+        this->vertices.emplace_back(i, nodeWeight);
     }
+
 
     return clustersLimites;
 }
