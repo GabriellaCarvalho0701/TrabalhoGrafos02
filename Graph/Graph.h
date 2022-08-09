@@ -66,10 +66,12 @@ class Graph {
     template <typename T>
     void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
 
-    vector<Graph *> guloso(vector<pair<int, int>> limiteClusters, bool randomizado, float *result);
+    vector<Graph *> guloso(vector<pair<int, int>> limiteClusters, bool randomizado, float *result, float semente);
     void algGulosoRandAdapt(vector<pair<int, int>> limitClusters);
     void algGuloso(vector<pair<int, int>> limitClusters);
+    void algGulosoReativo(vector<pair<int, int>> limitClusters);
     void imprimeCluster(vector<Graph *> solucao, int option, float result);
+    float qualidadeSolucao(float resultadoObtido);
 
    private:
     Node *firstNode;
