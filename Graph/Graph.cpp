@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <list>
@@ -15,7 +16,6 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
-#include <iomanip> 
 
 using std::cout;
 using std::endl;
@@ -321,7 +321,7 @@ void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
     std::unitbuf(cout);
 }
 
-vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float* result) {
+vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float* result, float semente) {
     vector<Graph*> solucao;
     *result = 0;
     bool* nosVisitados = new bool[getCounterOfNodes()];
@@ -350,12 +350,10 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
         int position = i;
         Node* node = nullptr;
 
-        if (randomizado) {
-            int position = rand() % getCounterOfNodes();
-            node = getNodeIfExist(position);
-        } else {
-            node = getNodeIfExist(position);
-        }
+        if (randomizado)
+            int position = (int)(rand() % ((int)(semente * getCounterOfNodes())));
+
+        node = getNodeIfExist(position);
 
         if (node == nullptr || nosVisitados[position] == true) {
             i--;
@@ -516,30 +514,44 @@ void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBenef
 
     if (option == 2)
         cout << std::setprecision(2) << std::fixed;
-        cout << "\n\nBeneficio final: " << totalBeneficio << endl;
+    cout << "\n\nBeneficio final: " << totalBeneficio << endl;
 }
+
+constexpr int FLOAT_MIN = 0;
+constexpr int FLOAT_MAX = 1;
 
 void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
     time_t start, end;
     time(&start);
 
     float maior = 0;
-    float result;
-    srand(time(NULL));
+    float result, semente;
+
+    srand(time(nullptr));
+    for (int i = 0; i < rand(); i++)
+        semente = FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN)));
+
+    cout << "Semente de randomizacao: " << semente << endl;
 
     for (int i = 0; i < 100; i++) {
-        guloso(limitClusters, 1, &result);
-        // cout << "-> " << result << endl;
+        guloso(limitClusters, 1, &result, semente);
         if (result > maior) {
             maior = result;
         }
     }
 
     time(&end);
-    double time = double(end - start);
-    cout << "Tempo de Execucao: " << time << endl;
 
+    cout << std::setprecision(2) << std::fixed;
+    double time = double(end - start);
+    cout << "Tempo de Execucao: " << time << " s" << endl;
     cout << "Melhor Solucao: " << maior << endl;
+    cout << "Qualidade Solucao: " << qualidadeSolucao(maior) << "%" << endl;
+    if (maior > 0) {
+        cout << "Conseguiu alguma solucao viavel" << endl;
+    } else {
+        cout << "Nao conseguiu nenhuma solucao viavel" << endl;
+    }
 }
 
 void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
@@ -548,21 +560,46 @@ void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
 
     float result = 0;
 
-    vector<Graph*> sol = guloso(limitClusters, 0, &result);
+    vector<Graph*> sol = guloso(limitClusters, 0, &result, 0);
 
-    /*time(&end);
+    time(&end);
     double time = double(end - start);
-    cout << "Tempo de Execucao: " << time << endl;*/
+    cout << std::setprecision(2) << std::fixed;
+    cout << "Tempo de Execucao: " << time << " s" << endl;
+    cout << "Qualidade Solucao: " << qualidadeSolucao(result) << "%" << endl;
+    if (result > 0) {
+        cout << "Conseguiu alguma solucao viavel" << endl;
+    } else {
+        cout << "Nao conseguiu nenhuma solucao viavel" << endl;
+    }
 
-    imprimeCluster(sol, 2, result);
+    // imprimeCluster(sol, 2, result);
+}
+
+void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
+    time_t start, end;
+    time(&start);
+
+    vector<float> alfas, solBest, medias, probabilidade, q;
+
+    for (int i = 0; i < rand(); i++)
+        alfas.push_back(FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN))));
+
+    alfas.push_back(0.05);
+    alfas.push_back(0.10);
+    alfas.push_back(0.15);
+    alfas.push_back(0.30);
+    alfas.push_back(0.50);
+
+    // imprimeCluster(sol, 2, result);
 }
 
 void Graph::printNodes2() {
     Node* node = firstNode;
     int cont = 0;
 
-    cout << "Limite | " << this->inferiorLimit << " <= " << this->getLimit() << " <= " << this->upperLimit << ""  <<endl;
-    
+    cout << "Limite | " << this->inferiorLimit << " <= " << this->getLimit() << " <= " << this->upperLimit << "" << endl;
+
     while (node != nullptr) {
         cout << node->getId() << ",";
         node = node->getNextNode();
@@ -608,3 +645,31 @@ void Graph::printNodes() {
 
 //     return weight;
 // }
+
+float Graph::qualidadeSolucao(float resultadoObtido) {
+    float resEsperado;
+
+    if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_01.txt") {
+        resEsperado = 225003.70;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_04.txt") {
+        resEsperado = 225683.17;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_07.txt") {
+        resEsperado = 209305.70;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_01.txt") {
+        resEsperado = 556126.86;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_04.txt") {
+        resEsperado = 522790.22;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt") {
+        resEsperado = 1340369.47;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/Sparse82_02.txt") {
+        resEsperado = 1306.64;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt") {
+        resEsperado = 1340369.47;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/20_10_270001") {
+        resEsperado = 2148.00;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/30_5_270003") {
+        resEsperado = 920.00;
+    }
+
+    return ((resultadoObtido * 100) / resEsperado);
+}
