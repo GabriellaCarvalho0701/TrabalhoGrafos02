@@ -353,8 +353,10 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
         int position = i;
         Node* node = nullptr;
 
-        if (randomizado)
-            int position = (int)(rand() % ((int)(semente * getCounterOfNodes())));
+        if (randomizado) {
+            position = (int)(rand() % ((int)(semente * getCounterOfNodes())));
+            cout << "- " << position << ", ";
+        }
 
         node = getNodeIfExist(position);
 
@@ -369,7 +371,10 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
         Graph* cluster = solucao[i];
         cluster->createNodeIfDoesntExist(position, node->getWeight());
         cluster->setLimit(node->getWeight());
+        cout << "-- " << cluster->getFirstNode()->getId() << " " << position << endl;
     }
+
+    cout << endl;
 
     // adicionando os demais nós aos clusters respeitando os limites
     priority_queue<pair<float, pair<int, int>>> listaCandidatos;
@@ -494,6 +499,121 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
     return solucao;
 }
 
+constexpr int FLOAT_MIN = 0;
+constexpr int FLOAT_MAX = 1;
+
+void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
+    time_t start, end;
+    time(&start);
+
+    float maior = 0;
+    float result, semente;
+    vector<Graph*> sol;
+
+    srand(time(nullptr));
+    for (int i = 0; i < rand(); i++)
+        semente = FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN)));
+
+    cout << "Semente de randomizacao: " << semente << endl;
+
+    for (int i = 0; i < 1; i++) {
+        guloso(limitClusters, 1, &result, semente);
+        if (result > maior) {
+            maior = result;
+            cout << sol.size();
+            for (int i = 0; i < sol.size(); i++)
+                sol[i] = nullptr;
+            sol = guloso(limitClusters, 1, &result, semente);
+        }
+    }
+
+    imprimeCluster(sol, 2, maior);
+
+    time(&end);
+
+    cout << std::setprecision(2) << std::fixed;
+    double time = double(end - start);
+    cout << "Tempo de Execucao: " << time << " s" << endl;
+    cout << "Melhor Solucao: " << maior << endl;
+    cout << "Qualidade Solucao: " << qualidadeSolucao(maior) << "%" << endl;
+    if (maior > 0) {
+        cout << "Conseguiu alguma solucao viavel" << endl;
+    } else {
+        cout << "Nao conseguiu nenhuma solucao viavel" << endl;
+    }
+
+    output("AlgoritmoGulosoRandomizadoAdaptativo.txt", sol, qualidadeSolucao(maior));
+}
+
+void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
+    time_t start, end;
+    time(&start);
+
+    float result = 0;
+
+    vector<Graph*> sol = guloso(limitClusters, 0, &result, 0);
+
+    time(&end);
+    double time = double(end - start);
+    cout << std::setprecision(2) << std::fixed;
+    cout << "Tempo de Execucao: " << time << " s" << endl;
+    cout << "Qualidade Solucao: " << qualidadeSolucao(result) << "%" << endl;
+    if (result > 0) {
+        cout << "Conseguiu alguma solucao viavel" << endl;
+    } else {
+        cout << "Nao conseguiu nenhuma solucao viavel" << endl;
+    }
+
+    // imprimeCluster(sol, 2, result);
+    output("AlgoritmoGuloso.txt", sol, qualidadeSolucao(result));
+}
+
+void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
+    time_t start, end;
+    time(&start);
+
+    vector<float> alfas, solBest, medias, probabilidade, q;
+
+    for (int i = 0; i < rand(); i++)
+        alfas.push_back(FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN))));
+
+    alfas.push_back(0.05);
+    alfas.push_back(0.10);
+    alfas.push_back(0.15);
+    alfas.push_back(0.30);
+    alfas.push_back(0.50);
+
+    // imprimeCluster(sol, 2, result);
+}
+
+float Graph::qualidadeSolucao(float resultadoObtido) {
+    float resEsperado;
+
+    if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_01.txt") {
+        resEsperado = 225003.70;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_04.txt") {
+        resEsperado = 225683.17;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_07.txt") {
+        resEsperado = 209305.70;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_01.txt") {
+        resEsperado = 556126.86;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_04.txt") {
+        resEsperado = 522790.22;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt") {
+        resEsperado = 1340369.47;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/Sparse82_02.txt") {
+        resEsperado = 1306.64;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt") {
+        resEsperado = 1340369.47;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/20_10_270001") {
+        resEsperado = 2148.00;
+    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/30_5_270003") {
+        resEsperado = 920.00;
+    }
+
+    return ((resultadoObtido * 100) / resEsperado);
+}
+
 void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBeneficio) {
     float totalBeneficio = 0.0;
 
@@ -518,83 +638,6 @@ void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBenef
     if (option == 2)
         cout << std::setprecision(2) << std::fixed;
     cout << "\n\nBeneficio final: " << totalBeneficio << endl;
-}
-
-constexpr int FLOAT_MIN = 0;
-constexpr int FLOAT_MAX = 1;
-
-void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
-    time_t start, end;
-    time(&start);
-
-    float maior = 0;
-    float result, semente;
-
-    srand(time(nullptr));
-    for (int i = 0; i < rand(); i++)
-        semente = FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN)));
-
-    cout << "Semente de randomizacao: " << semente << endl;
-
-    for (int i = 0; i < 100; i++) {
-        guloso(limitClusters, 1, &result, semente);
-        if (result > maior) {
-            maior = result;
-        }
-    }
-
-    time(&end);
-
-    cout << std::setprecision(2) << std::fixed;
-    double time = double(end - start);
-    cout << "Tempo de Execucao: " << time << " s" << endl;
-    cout << "Melhor Solucao: " << maior << endl;
-    cout << "Qualidade Solucao: " << qualidadeSolucao(maior) << "%" << endl;
-    if (maior > 0) {
-        cout << "Conseguiu alguma solucao viavel" << endl;
-    } else {
-        cout << "Nao conseguiu nenhuma solucao viavel" << endl;
-    }
-}
-
-void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
-    time_t start, end;
-    time(&start);
-
-    float result = 0;
-
-    vector<Graph*> sol = guloso(limitClusters, 0, &result, 0);
-
-    time(&end);
-    double time = double(end - start);
-    cout << std::setprecision(2) << std::fixed;
-    cout << "Tempo de Execucao: " << time << " s" << endl;
-    cout << "Qualidade Solucao: " << qualidadeSolucao(result) << "%" << endl;
-    if (result > 0) {
-        cout << "Conseguiu alguma solucao viavel" << endl;
-    } else {
-        cout << "Nao conseguiu nenhuma solucao viavel" << endl;
-    }
-
-    // imprimeCluster(sol, 2, result);
-}
-
-void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
-    time_t start, end;
-    time(&start);
-
-    vector<float> alfas, solBest, medias, probabilidade, q;
-
-    for (int i = 0; i < rand(); i++)
-        alfas.push_back(FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN))));
-
-    alfas.push_back(0.05);
-    alfas.push_back(0.10);
-    alfas.push_back(0.15);
-    alfas.push_back(0.30);
-    alfas.push_back(0.50);
-
-    // imprimeCluster(sol, 2, result);
 }
 
 void Graph::printNodes2() {
@@ -633,6 +676,52 @@ void Graph::printNodes() {
     }
 }
 
+/*
+ * Função escreve o os nós passados em um arquivo
+ *@params: string outputFileName: Nome do arquivo que será registrado os nós
+ *         Node* nodes[]: conjuntos de nós resposta da operação realizada
+ *         int cont: contador de quantos nós há no array nodes
+ *         string textStart: texto inicial a ser escrito
+ *@return:
+ ****************************************************************/
+void Graph::output(string outputFileName, vector<Graph*> solucao, float qualidadeSolucao) {
+    FILE* outfile = fopen(outputFileName.c_str(), "w+");
+
+    string text = string("Solução da Clusterização Capacitada: \n\n");
+    fwrite(text.c_str(), 1, text.size(), outfile);
+
+    for (int i = 0; i < this->quantidadeClusters; i++) {
+        Graph* cluster = solucao[i];
+
+        text = string("===============IMPRIME CLUSTER ") + std::to_string(i + 1) + string(" ===================") + "\n";
+        fwrite(text.c_str(), 1, text.size(), outfile);
+
+        text = string("Beneficio do Cluster: ") + std::to_string(cluster->totalBeneficio) + "\n";
+        fwrite(text.c_str(), 1, text.size(), outfile);
+
+        Node* node = cluster->getFirstNode();
+
+        text = string("Limite | ") + std::to_string(cluster->inferiorLimit) + string(" <= ") + std::to_string(cluster->getLimit()) + string(" <= ") + std::to_string(cluster->upperLimit) + ": \n";
+        fwrite(text.c_str(), 1, text.size(), outfile);
+
+        text = string("Nós do Cluster:  ");
+        fwrite(text.c_str(), 1, text.size(), outfile);
+
+        while (node != nullptr) {
+            text = std::to_string(node->getId()) + string(",");
+            fwrite(text.c_str(), 1, text.size(), outfile);
+            node = node->getNextNode();
+        }
+
+        text = string("\n\n");
+        fwrite(text.c_str(), 1, text.size(), outfile);
+    }
+    text = string("Qualidade da Solução: ") + std::to_string(qualidadeSolucao) + "% \n\n";
+    fwrite(text.c_str(), 1, text.size(), outfile);
+
+    cout << "O arquivo " << outputFileName << " foi gerado com sucesso.";
+}
+
 // float Graph::calculateBenefit(){
 //     Node* node = this->getFirstNode();
 //     Edge* edge = node->getFirstEdge();
@@ -648,31 +737,3 @@ void Graph::printNodes() {
 
 //     return weight;
 // }
-
-float Graph::qualidadeSolucao(float resultadoObtido) {
-    float resEsperado;
-
-    if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_01.txt") {
-        resEsperado = 225003.70;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_04.txt") {
-        resEsperado = 225683.17;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_07.txt") {
-        resEsperado = 209305.70;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_01.txt") {
-        resEsperado = 556126.86;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_04.txt") {
-        resEsperado = 522790.22;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt") {
-        resEsperado = 1340369.47;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/Sparse82_02.txt") {
-        resEsperado = 1306.64;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt") {
-        resEsperado = 1340369.47;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/20_10_270001") {
-        resEsperado = 2148.00;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/30_5_270003") {
-        resEsperado = 920.00;
-    }
-
-    return ((resultadoObtido * 100) / resEsperado);
-}
