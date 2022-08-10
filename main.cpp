@@ -1,4 +1,3 @@
-#include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -46,15 +45,13 @@ void processOperationChoice(Graph *graph, vector<pair<int, int>> limiteClusters)
     }
 }
 
-
 /*
  * Funcao principal, faz as leituras dos argumentos passados na linha de comentado
  * @params: argc: numero de arumentos
  *          argv: argumentos
  * @return:
  ****************************************************************/
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     srand(time(nullptr));
     auto *graph = new Graph(argc, argv);
     vector<pair<int, int>> limiteClusters = graph->leituraArquivo();
