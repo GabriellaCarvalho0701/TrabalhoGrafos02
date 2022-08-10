@@ -1,5 +1,4 @@
 #include "Graph.h"
-
 #include <math.h>
 #include <time.h>
 
@@ -18,6 +17,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <numeric>
 
 using std::cout;
 using std::endl;
@@ -33,10 +33,13 @@ using std::vector;
 
 using std::string;
 
-Graph::Graph(size_t argc, char** argv) : nodesTotal(0), edgesTotal(0), firstNode(nullptr), inferiorLimit(-1), upperLimit(-1), currentLimit(0) {
-    if (argc != 4) {
+Graph::Graph(size_t argc, char **argv) : nodesTotal(0), edgesTotal(0), firstNode(nullptr), inferiorLimit(-1),
+                                         upperLimit(-1), currentLimit(0)
+{
+    if (argc != 4)
+    {
         std::cerr
-            << "[ERRO] parametros do programa incorretos\nEsperado: ./execGrupoX <arquivo_entrada> <arquivo_saida> <Tipo_Instancia>\n";
+                << "[ERRO] parametros do programa incorretos\nEsperado: ./execGrupoX <arquivo_entrada> <arquivo_saida> <Tipo_Instancia>\n";
         exit(-1);
     }
     pathArquivoEntrada = static_cast<string>(argv[1]);
@@ -55,35 +58,43 @@ Graph::Graph(int inferiorLimit, int upperLimit) : tipoInstancia(-1)  // necessar
     this->currentLimit = 0;
 }
 
-void Graph::addCounterOfNodes() {
+void Graph::addCounterOfNodes()
+{
     nodesTotal++;
 }
 
-int Graph::getCounterOfNodes() {
+int Graph::getCounterOfNodes()
+{
     return nodesTotal;
 }
 
-void Graph::addCounterOfEdges() {
+void Graph::addCounterOfEdges()
+{
     edgesTotal++;
 }
 
-int Graph::getCounterOfEdges() {
+int Graph::getCounterOfEdges()
+{
     return edgesTotal;
 }
 
-void Graph::setFirstNode(Node* node) {
+void Graph::setFirstNode(Node *node)
+{
     firstNode = node;
 }
 
-Node* Graph::getFirstNode() {
+Node *Graph::getFirstNode()
+{
     return firstNode;
 }
 
-void Graph::setLimit(int limit) {
+void Graph::setLimit(int limit)
+{
     this->currentLimit += limit;
 }
 
-int Graph::getLimit() {
+int Graph::getLimit()
+{
     return currentLimit;
 }
 
@@ -94,13 +105,17 @@ int Graph::getLimit() {
  *
  *@return: um ponteiro para o objeto nó já previamente existente ou nullptr
  ****************************************************************/
-Node* Graph::getNodeIfExist(int id) {
-    Node* node = this->firstNode;
+Node *Graph::getNodeIfExist(int id)
+{
+    Node *node = this->firstNode;
 
-    if (node == nullptr) return nullptr;
+    if (node == nullptr)
+    { return nullptr; }
 
-    while (node != nullptr) {
-        if (node->getId() == id) {
+    while (node != nullptr)
+    {
+        if (node->getId() == id)
+        {
             return node;
         }
 
@@ -116,12 +131,14 @@ Node* Graph::getNodeIfExist(int id) {
  *         int weight: peso do vértice
  *@return: um ponteiro para o objeto nó criado ou já previamente existente
  ****************************************************************/
-Node* Graph::createNodeIfDoesntExist(int id, float weight) {
-    Node* node = this->getNodeIfExist(id);
+Node *Graph::createNodeIfDoesntExist(int id, float weight)
+{
+    Node *node = this->getNodeIfExist(id);
 
-    if (node == nullptr) {
-        Node* newNode = new Node(id, weight, this);
-        Node* oldFirstNode = firstNode;
+    if (node == nullptr)
+    {
+        Node *newNode = new Node(id, weight, this);
+        Node *oldFirstNode = firstNode;
         newNode->setNextNode(oldFirstNode);
         setFirstNode(newNode);
 
@@ -138,18 +155,22 @@ Node* Graph::createNodeIfDoesntExist(int id, float weight) {
  *         int weight: peso da aresta
  *@return: um ponteiro para o objeto aresta criado
  ****************************************************************/
-Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, float weight) {
-    Edge* newEdge = new Edge(nodeHead, nodeTail, weight, this);
+Edge *Graph::createEdge(Node *nodeHead, Node *nodeTail, float weight)
+{
+    Edge *newEdge = new Edge(nodeHead, nodeTail, weight, this);
     this->vectorOfEdges.emplace_back(newEdge);
 
-    Edge* nodeFirstEdge = nodeHead->getFirstEdge();
+    Edge *nodeFirstEdge = nodeHead->getFirstEdge();
 
     nodeHead->incrementDegreeOut();
     nodeTail->incrementDegreeIn();
 
-    if (nodeFirstEdge == nullptr) {
+    if (nodeFirstEdge == nullptr)
+    {
         nodeHead->setFirstEdge(newEdge);
-    } else {
+    }
+    else
+    {
         newEdge->setNextEdge(nodeFirstEdge);
         nodeHead->setFirstEdge(newEdge);
     }
@@ -157,7 +178,8 @@ Edge* Graph::createEdge(Node* nodeHead, Node* nodeTail, float weight) {
     return newEdge;
 }
 
-long inline tamanhoArquivo(fstream& arq) {
+long inline tamanhoArquivo(fstream &arq)
+{
     arq.ignore(std::numeric_limits<std::streamsize>::max());
     std::streamsize length = arq.gcount();
     arq.clear();
@@ -166,9 +188,11 @@ long inline tamanhoArquivo(fstream& arq) {
     return length;
 }
 
-vector<pair<int, int>> Graph::leituraArquivo() {
+vector<pair<int, int>> Graph::leituraArquivo()
+{
     fstream arquivoEntrada(static_cast<string>(this->pathArquivoEntrada), std::ios::in);
-    if (!arquivoEntrada.is_open()) {
+    if (!arquivoEntrada.is_open())
+    {
         std::cerr << "\n\t[ERRO] arquivo nao pode ser aberto lerArquivo";
         exit(10);
     }
@@ -183,7 +207,8 @@ vector<pair<int, int>> Graph::leituraArquivo() {
     if (this->tipoInstancia == 1)  // RanReal e Sparse
     {
         limiteClusters = this->leituraRanRealeSparse(fileIn);
-    } else if (this->tipoInstancia == 2)  // Handover
+    }
+    else if (this->tipoInstancia == 2)  // Handover
     {
         limiteClusters = this->leituraHandover(fileIn);
     }
@@ -194,13 +219,15 @@ vector<pair<int, int>> Graph::leituraArquivo() {
     }
 
     criaArestas();
-    for (int i = 0; i < this->nodesTotal; ++i) {
+    for (int i = 0; i < this->nodesTotal; ++i)
+    {
         this->matrizDistancia[i][i] = 0.0f;
     }
     return limiteClusters;
 }
 
-vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
+vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream &fileIn)
+{
     string primeiraLinha;
     getline(fileIn, primeiraLinha);
     vector<pair<int, int>> limitClusters;
@@ -214,8 +241,10 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     string linha;
     int verticeFonte = 0, verticeAlvo = 0;
     float beneficio = 0.0f;
-    while (getline(fileIn, linha, '\n') && !fileIn.eof()) {
-        if (linha.empty()) {
+    while (getline(fileIn, linha, '\n') && !fileIn.eof())
+    {
+        if (linha.empty())
+        {
             break;
         }
 
@@ -233,12 +262,14 @@ vector<pair<int, int>> Graph::leituraRanRealeSparse(std::stringstream& fileIn) {
     return limitClusters;
 }
 
-vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& linha) {
+vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string &linha)
+{
     // divide a linha em palavras para ser possível separar os dados
     std::stringstream ss(linha);
     string item;
     vector<string> tokens;
-    while (getline(ss, item, ' ')) {
+    while (getline(ss, item, ' '))
+    {
         tokens.push_back(item);
     }
     // informacoes basicas do grafo
@@ -249,14 +280,16 @@ vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& l
     // TODO: visto que stenio nao usa essa informacao e nao parece ser util guardar o limite de cada cluster
     // get limites dos clusters
     vector<pair<int, int>> clustersLimites;  // clustersLimites[i] = (limiteInferior, limiteSuperior)
-    for (int i = 0; i < quantidadeClusters; i++) {
+    for (int i = 0; i < quantidadeClusters; i++)
+    {
         int clusterId = stoi(tokens[3 + i * 2]);
         int clusterLimite = stoi(tokens[4 + i * 2]);
         clustersLimites.emplace_back(clusterId, clusterLimite);
     }
 
     // get node weights
-    for (int i = 0; i < nodesTotalOriginal; i++) {
+    for (int i = 0; i < nodesTotalOriginal; i++)
+    {
         float nodeWeight = stof(tokens[4 + quantidadeClusters * 2 + i]);
         this->createNodeIfDoesntExist(i, nodeWeight);
         this->vertices.emplace_back(i, nodeWeight);
@@ -285,16 +318,19 @@ vector<pair<int, int>> Graph::leituraHandover(std::stringstream &fileIn)
         //        this->inserirCluster(this->inferiorLimit,this->upperLimit);
     }
 
-    for (int i = 0; i < quantidadeNos; ++i) {
+    for (int i = 0; i < quantidadeNos; ++i)
+    {
         getline(fileIn, linha, '\n');
         this->vertices.emplace_back(i, stof(linha));
         this->createNodeIfDoesntExist(i, stof(linha));
     }
 
     this->matrizDistancia.reserve(quantidadeNos);
-    for (int i = 0; i < quantidadeNos; ++i) {
+    for (int i = 0; i < quantidadeNos; ++i)
+    {
         std::vector<float> aux;
-        for (int j = 0; j < quantidadeNos; ++j) {
+        for (int j = 0; j < quantidadeNos; ++j)
+        {
             getline(fileIn, linha, ' ');
             aux.push_back(stof(linha));
         }
@@ -304,36 +340,54 @@ vector<pair<int, int>> Graph::leituraHandover(std::stringstream &fileIn)
     return clustersLimites;
 }
 
-void Graph::criaArestas() {
-    for (int i = 0; i < this->getCounterOfNodes(); i++) {
-        for (int j = 0; j < this->getCounterOfNodes(); j++) {
-            if (matrizDistancia[i][j] != 0) {
+void Graph::criaArestas()
+{
+    for (int i = 0; i < this->getCounterOfNodes(); i++)
+    {
+        for (int j = 0; j < this->getCounterOfNodes(); j++)
+        {
+            if (matrizDistancia[i][j] != 0)
+            {
                 this->createEdge(this->getNodeIfExist(i), this->getNodeIfExist(j), this->matrizDistancia[i][j]);
             }
         }
     }
 }
 
-template <typename T>
-void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
-    std::unitbuf(cout);
-
-    for (int i = 0; i < matriz.size(); ++i) {
-        for (int j = 0; j < matriz[i].size(); ++j) {
-            cout << matriz[i][j] << " ";
-        }
-        cout << endl;
-    }
-    // restore buf to cout
-    std::unitbuf(cout);
-}
-
-template<typename T>
-T returnRandom(T startRange, T endRange)
+void Graph::inicializaListaDeCandidatos()
 {
-    return startRange + T(rand()) / T(RAND_MAX) * (endRange - startRange);
+    this->listaDeCandidatos = new list<int>;
+    for (int i = 0; i < this->getCounterOfNodes(); i++)
+    {
+        listaDeCandidatos->push_back(i);
+    }
+}
+float returnRandomFloat(float min, float max)
+{
+    float random = ((float)rand()) / (float)RAND_MAX;
+    float diff = max - min;
+    float r = random * diff;
+    return min + r;
 }
 
+Node * Graph::retornaNoValidoDosCandidatos(float min, float max)
+{
+    int idRandom = returnRandomFloat(min, max);
+    // find the node with at idRandom
+    int i = 0;
+    for (auto it = this->listaDeCandidatos->begin(); it != this->listaDeCandidatos->end(); ++it)
+    {
+        if (i == idRandom)
+        {
+            auto node = this->getNodeIfExist(*it);
+            this->listaDeCandidatos->erase(it);
+            return node;
+        }
+        i++;
+    }
+
+
+}
 vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float *result, float alfa)
 {
     vector<Graph *> solucao;
@@ -351,20 +405,19 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomi
         Graph *cluster = new Graph(limitCluster.first, limitCluster.second);
         solucao.push_back(cluster);
     }
-
+    inicializaListaDeCandidatos();
     // sorteando aleatoriamente um nó para iniciar cada cluster
-    for (int i = 0; i < this->quantidadeClusters; i++) {
-        int position = i;
-        Node* node = nullptr;
+    for (int i = 0; i < this->quantidadeClusters; i++)
+    {
 
-        if (randomizado)
+        auto node = (randomizado) ? retornaNoValidoDosCandidatos(0.0f, alfa * (this->getCounterOfNodes()- 1)) : this->getNodeIfExist(i);
+
+        int position = node->getId();
+
+        // auto node = getNodeIfExist(position);
+
+        if (node == nullptr || nosVisitados[position] == true)
         {
-            position = returnRandom(0.0f, alfa * (this->getCounterOfNodes() - 1));
-        }
-
-        node = getNodeIfExist(position);
-
-        if (node == nullptr || nosVisitados[position] == true) {
             i--;
             continue;
         }
@@ -372,7 +425,7 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomi
         nosVisitados[position] = true;
         contNosVisitados++;
 
-        Graph* cluster = solucao[i];
+        Graph *cluster = solucao[i];
         cluster->createNodeIfDoesntExist(position, node->getWeight());
         cluster->setLimit(node->getWeight());
     }
@@ -381,15 +434,20 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomi
     priority_queue<pair<float, pair<int, int>>> listaCandidatos;
 
     // while que garante que os clusters tenham o limite inferior
-    for (int i = 0; i < this->quantidadeClusters; i++) {
-        Graph* cluster = solucao[i];
+    for (int i = 0; i < this->quantidadeClusters; i++)
+    {
+        Graph *cluster = solucao[i];
         int idAux = cluster->getFirstNode()->getId();
 
-        while (cluster->getLimit() < cluster->inferiorLimit || listaCandidatos.empty()) {
+        while (cluster->getLimit() < cluster->inferiorLimit || listaCandidatos.empty())
+        {
             // ordenando a lista de candidatos da aresta de maior beneficio para a de menor de acordo com o nó que entra no cluster
-            for (int j = 0; j < getCounterOfNodes(); j++) {
+            for (int j = 0; j < getCounterOfNodes(); j++)
+            {
                 if (!nosVisitados[j])
+                {
                     listaCandidatos.push(make_pair(matrizDistancia[idAux][j], make_pair(idAux, j)));
+                }
             }
 
             pair<float, pair<int, int>> candidato = listaCandidatos.top();
@@ -397,24 +455,30 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomi
             pair<int, int> parDeNo = candidato.second;
             listaCandidatos.pop();
 
-            Node* noGrafo = cluster->getNodeIfExist(parDeNo.first);
-            Node* noExterno = getNodeIfExist(parDeNo.second);
+            Node *noGrafo = cluster->getNodeIfExist(parDeNo.first);
+            Node *noExterno = getNodeIfExist(parDeNo.second);
 
-            if (noGrafo == nullptr) {
+            if (noGrafo == nullptr)
+            {
                 noGrafo = cluster->getNodeIfExist(parDeNo.second);
                 noExterno = getNodeIfExist(parDeNo.first);
             }
 
             if (
-                cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit && nosVisitados[noExterno->getId()] == false) {
+                    cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit &&
+                    nosVisitados[noExterno->getId()] == false)
+            {
                 cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
                 cluster->totalBeneficio += distancia;
                 arestasVisitadas[noExterno->getId()][noGrafo->getId()] = true;
                 arestasVisitadas[noGrafo->getId()][noExterno->getId()] = true;
 
-                Node* noCluster = cluster->getFirstNode();
-                while (noCluster != nullptr) {
-                    if (arestasVisitadas[noExterno->getId()][noCluster->getId()] == false && arestasVisitadas[noCluster->getId()][noExterno->getId()] == false) {
+                Node *noCluster = cluster->getFirstNode();
+                while (noCluster != nullptr)
+                {
+                    if (arestasVisitadas[noExterno->getId()][noCluster->getId()] == false &&
+                        arestasVisitadas[noCluster->getId()][noExterno->getId()] == false)
+                    {
                         cluster->totalBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
                         resultBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
                         // cout << noExterno->getId() << " " << noCluster->getId() << endl;
@@ -434,36 +498,46 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomi
     }
 
     // atualiza a lista de candidatos com os nós que ainda não estão nos clusters
-    for (int i = 0; i < getCounterOfNodes(); i++) {
-        for (int j = 0; j < getCounterOfNodes(); j++) {
+    for (int i = 0; i < getCounterOfNodes(); i++)
+    {
+        for (int j = 0; j < getCounterOfNodes(); j++)
+        {
             if (nosVisitados[i] == false || nosVisitados[j] == false)
+            {
                 listaCandidatos.push(make_pair(matrizDistancia[i][j], make_pair(i, j)));
+            }
         }
     }
 
     // while que garante que todos os nós estão nos cluters e garante que os clusters tenham até o limite superior
-    while (contNosVisitados < this->getCounterOfNodes() && !listaCandidatos.empty()) {
+    while (contNosVisitados < this->getCounterOfNodes() && !listaCandidatos.empty())
+    {
         pair<float, pair<int, int>> candidato = listaCandidatos.top();
         float distancia = candidato.first;
         pair<int, int> parDeNo = candidato.second;
         listaCandidatos.pop();
 
         if (
-            !(nosVisitados[parDeNo.first] == true && nosVisitados[parDeNo.second] == true) &&
-            !(nosVisitados[parDeNo.first] == false && nosVisitados[parDeNo.second] == false)) {
-            for (int i = 0; i < this->quantidadeClusters; i++) {
-                Graph* cluster = solucao[i];
+                !(nosVisitados[parDeNo.first] == true && nosVisitados[parDeNo.second] == true) &&
+                !(nosVisitados[parDeNo.first] == false && nosVisitados[parDeNo.second] == false))
+        {
+            for (int i = 0; i < this->quantidadeClusters; i++)
+            {
+                Graph *cluster = solucao[i];
 
-                Node* noGrafo = cluster->getNodeIfExist(parDeNo.first);
-                Node* noExterno = getNodeIfExist(parDeNo.second);
+                Node *noGrafo = cluster->getNodeIfExist(parDeNo.first);
+                Node *noExterno = getNodeIfExist(parDeNo.second);
 
-                if (noGrafo == nullptr) {
+                if (noGrafo == nullptr)
+                {
                     noGrafo = cluster->getNodeIfExist(parDeNo.second);
                     noExterno = getNodeIfExist(parDeNo.first);
                 }
 
                 if (
-                    cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit && nosVisitados[noExterno->getId()] == false) {
+                        cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit &&
+                        nosVisitados[noExterno->getId()] == false)
+                {
                     cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
                     cluster->totalBeneficio += distancia;
                     resultBeneficio += distancia;
@@ -471,9 +545,12 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomi
                     arestasVisitadas[parDeNo.first][parDeNo.second] = true;
                     arestasVisitadas[parDeNo.second][parDeNo.first] = true;
 
-                    Node* noCluster = cluster->getFirstNode();
-                    while (noCluster != nullptr) {
-                        if (arestasVisitadas[noExterno->getId()][noCluster->getId()] == false && arestasVisitadas[noCluster->getId()][noExterno->getId()] == false) {
+                    Node *noCluster = cluster->getFirstNode();
+                    while (noCluster != nullptr)
+                    {
+                        if (arestasVisitadas[noExterno->getId()][noCluster->getId()] == false &&
+                            arestasVisitadas[noCluster->getId()][noExterno->getId()] == false)
+                        {
                             cluster->totalBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
                             resultBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
                             // cout << noExterno->getId() << " - " << noCluster->getId() << endl;
@@ -497,28 +574,33 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomi
     //   imprimeCluster(solucao, 2, resultBeneficio);
 
     *result = resultBeneficio;
+    delete this->listaDeCandidatos;
     return solucao;
 }
 
 constexpr int FLOAT_MIN = 0;
 constexpr int FLOAT_MAX = 1;
 
-void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
+void Graph::algGuloso(vector<pair<int, int>> limitClusters)
+{
     time_t start, end;
     time(&start);
 
     float result = 0;
 
-    vector<Graph*> sol = guloso(limitClusters, 0, &result, 0);
+    vector<Graph *> sol = guloso(limitClusters, 0, &result, 0);
 
     time(&end);
     double time = double(end - start);
     cout << std::setprecision(2) << std::fixed;
     cout << "Tempo de Execucao: " << time << " s" << endl;
     cout << "Qualidade Solucao: " << qualidadeSolucao(result) << "%" << endl;
-    if (result > 0) {
+    if (result > 0)
+    {
         cout << "Conseguiu alguma solucao viavel" << endl;
-    } else {
+    }
+    else
+    {
         cout << "Nao conseguiu nenhuma solucao viavel" << endl;
     }
 
@@ -526,22 +608,25 @@ void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
     output("AlgoritmoGuloso.txt", sol, qualidadeSolucao(result));
 }
 
-void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
+void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters)
+{
     time_t start, end;
     time(&start);
 
     float maior = 0;
     float result, semente;
-    vector<Graph*> sol, melhorSol;
+    vector<Graph *> sol, melhorSol;
 
     for (int i = 0; i < rand(); i++)
-        semente = FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN)));
+        semente = FLOAT_MIN + (float) (rand()) / ((float) (RAND_MAX / (FLOAT_MAX - FLOAT_MIN)));
 
     cout << "Semente de randomizacao: " << semente << endl;
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++)
+    {
         sol = guloso(limitClusters, 1, &result, semente);
-        if (result > maior) {
+        if (result > maior)
+        {
             maior = result;
             melhorSol = sol;
         }
@@ -556,16 +641,20 @@ void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
     cout << "Tempo de Execucao: " << time << " s" << endl;
     cout << "Melhor Solucao: " << maior << endl;
     cout << "Qualidade Solucao: " << qualidadeSolucao(maior) << "%" << endl;
-    if (maior > 0) {
+    if (maior > 0)
+    {
         cout << "Conseguiu alguma solucao viavel" << endl;
-    } else {
+    }
+    else
+    {
         cout << "Nao conseguiu nenhuma solucao viavel" << endl;
     }
 
     output("AlgoritmoGulosoRandomizadoAdaptativo.txt", melhorSol, qualidadeSolucao(maior));
 }
 
-struct media {
+struct media
+{
     float soma;
     float numSolucoes;
     float media;
@@ -578,13 +667,15 @@ void inicializaVetores(vector<float> &prob, vector<media> &medias, size_t numAlf
 
     float auxProb = 1.0f / static_cast<float>(auxNumAlfas);
 
-    for (int i = 0; i < numAlfas; i++) {
+    for (int i = 0; i < numAlfas; i++)
+    {
         prob.push_back(auxProb);
         medias.push_back(aux);
     }
 }
 
-void atualizaProbabilidades(vector<media>& medias, vector<float>& prob, vector<float>& solBest, vector<float>& q) {
+void atualizaProbabilidades(vector<media> &medias, vector<float> &prob, vector<float> &solBest, vector<float> &q)
+{
     float somaQ = 0;
     float melhorSolucao = *(max_element(solBest.begin(), solBest.end()));
 
@@ -594,40 +685,46 @@ void atualizaProbabilidades(vector<media>& medias, vector<float>& prob, vector<f
         somaQ += q[i];
     }
 
-    for (int i = 0; i < medias.size(); i++) {
+    for (int i = 0; i < medias.size(); i++)
+    {
         prob[i] = q[i] / somaQ;
     }
 }
 
+
+
 float escolheAlfa(vector<float> &prob, vector<float> &alfas)
 {
     float alfaIndex;
-    float auxIndex;
-    vector<float> aux;
+    size_t auxIndex;
+    vector<float> listaPesada;
 
     for (int i = 0; i < prob.size(); i++)
     {
         for (int j = 0; j < (int) (prob[i] * 100); j++)
         {
-            aux.push_back(alfas[i]);
+            listaPesada.push_back(alfas[i]);
         }
     }
 
-    auxIndex = rand() % aux.size();
-    alfaIndex = aux[auxIndex];
+    auxIndex = rand() % listaPesada.size();
+    // cout << "auxIndex: " << auxIndex << "valor: " << listaPesada[auxIndex] << endl;
+    alfaIndex = listaPesada[auxIndex];
 
     return alfaIndex;
 }
 
 void atualizaMedias(vector<media> &medias, float solucao, vector<float> &alfas, float alfa)
 {
-    int aux;
+    size_t aux = 0;
     float auxSolucao;
 
     auxSolucao = solucao;
 
-    for (int i = 0; i < alfas.size(); i++) {
-        if (alfa == alfas[i]) {
+    for (size_t i = 0; i < alfas.size(); i++)
+    {
+        if (alfa == alfas[i])
+        {
             aux = i;
             break;
         }
@@ -638,43 +735,37 @@ void atualizaMedias(vector<media> &medias, float solucao, vector<float> &alfas, 
     medias[aux].media = medias[aux].soma / medias[aux].numSolucoes;
 }
 
-void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
-    time_t start, end;
-    time(&start);
-
-    vector<float> alfas{0.05f, 0.10f, 0.15f, 0.3f, 0.5f}, solBest, probabilidade, q;
+void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters)
+{
+    vector<float> alfas{0.05f, 0.1f}, solBest, probabilidade, q;
     vector<media> medias;
-    int numIt = 60;
+    int numIt = 10;
     int numBloco = 30;
-    int numAlfas = 5;
-    int index;
     float solucao;
-    float auxAlfa;
 
     for (int i = 0; i < alfas.size(); i++)
     {
-        q.push_back(0.00);
-        solBest.push_back(0.00);
+        q.push_back(0.00f);
+        solBest.push_back(0.00f);
     }
 
     inicializaVetores(probabilidade, medias, alfas.size());
 
-    inicializaVetores(probabilidade, medias, numAlfas);
-
-    for (int i = 0; i < numIt; i++) {
-        if (i != 0 && i % numBloco == 0) {
+    for (int i = 0; i < numIt; i++)
+    {
+        if (i != 0 && i % numBloco == 0)
+        {
             atualizaProbabilidades(medias, probabilidade, solBest, q);
         }
 
-        float index = escolheAlfa(probabilidade, alfas);
-        //auxAlfa = alfas[index];
+        float alfaEscolhido = escolheAlfa(probabilidade, alfas);
 
         /**/
 
         float maiorBeneficio = 0;
         float result, semente;
         vector<Graph *> sol, melhorSol;
-        sol = guloso(limitClusters, true, &result, index);
+        sol = guloso(limitClusters, true, &result, alfaEscolhido);
         if (result > maiorBeneficio)
         {
             maiorBeneficio = result;
@@ -683,10 +774,11 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
 
         /**/
 
-        atualizaMedias(medias, maiorBeneficio, alfas, index);
+        atualizaMedias(medias, maiorBeneficio, alfas, alfaEscolhido);
 
-        if (solBest[index] == 0 || solBest[index] > maiorBeneficio) {
-            solBest[index] = maiorBeneficio;
+        if (solBest[alfaEscolhido] == 0 || solBest[alfaEscolhido] > maiorBeneficio)
+        {
+            solBest[alfaEscolhido] = maiorBeneficio;
         }
     }
 
@@ -699,55 +791,79 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
         }
     }
 
-    // double temp = fimProces(&inicio, &fim);
     cout << "Melhor Solucao: " << auxSolBest << endl;
 
-    // imprimeCluster(sol, 2, result);
 }
 
-float Graph::qualidadeSolucao(float resultadoObtido) {
+float Graph::qualidadeSolucao(float resultadoObtido)
+{
     float resEsperado;
 
-    if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_01.txt") {
+    if (this->pathArquivoEntrada == "../EntryFiles/InstanciasTurmaGrafos/RanReal240_01.txt")
+    {
         resEsperado = 225003.70;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_04.txt") {
+    }
+    else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_04.txt")
+    {
         resEsperado = 225683.17;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_07.txt") {
+    }
+    else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal240_07.txt")
+    {
         resEsperado = 209305.70;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_01.txt") {
+    }
+    else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_01.txt")
+    {
         resEsperado = 556126.86;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_04.txt") {
+    }
+    else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal480_04.txt")
+    {
         resEsperado = 522790.22;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt") {
+    }
+    else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt")
+    {
         resEsperado = 1340369.47;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/Sparse82_02.txt") {
+    }
+    else if (this->pathArquivoEntrada == "../EntryFiles/InstanciasTurmaGrafos/Sparse82_02.txt")
+    {
         resEsperado = 1306.64;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt") {
+    }
+    else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/RanReal960_01.30.txt")
+    {
         resEsperado = 1340369.47;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/20_10_270001") {
+    }
+    else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/20_10_270001")
+    {
         resEsperado = 2148.00;
-    } else if (this->pathArquivoEntrada == "./EntryFiles/InstanciasTurmaGrafos/30_5_270003") {
+    }
+    else if (this->pathArquivoEntrada == "../EntryFiles/InstanciasTurmaGrafos/30_5_270003")
+    {
         resEsperado = 920.00;
     }
 
     return ((resultadoObtido * 100) / resEsperado);
 }
 
-void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBeneficio) {
+void Graph::imprimeCluster(vector<Graph *> solucao, int option, float resultBeneficio)
+{
     float totalBeneficio = 0.0;
 
-    for (int i = 0; i < this->quantidadeClusters; i++) {
-        Graph* cluster = solucao[i];
+    for (int i = 0; i < this->quantidadeClusters; i++)
+    {
+        Graph *cluster = solucao[i];
 
-        if (option == 2) {
+        if (option == 2)
+        {
             cout << "===============IMPRIME CLUSTER " << i + 1 << " ===================" << endl;
             cout << "Beneficio " << cluster->totalBeneficio << endl;
             totalBeneficio += cluster->totalBeneficio;
         }
 
-        if (option == 1) {
+        if (option == 1)
+        {
             cluster->printNodes();
-        } else if (option == 2) {
+        }
+        else if (option == 2)
+        {
             cluster->printNodes2();
         }
 
@@ -755,17 +871,22 @@ void Graph::imprimeCluster(vector<Graph*> solucao, int option, float resultBenef
     }
 
     if (option == 2)
+    {
         cout << std::setprecision(2) << std::fixed;
+    }
     cout << "\n\nBeneficio final: " << totalBeneficio << endl;
 }
 
-void Graph::printNodes2() {
-    Node* node = firstNode;
+void Graph::printNodes2()
+{
+    Node *node = firstNode;
     int cont = 0;
 
-    cout << "Limite | " << this->inferiorLimit << " <= " << this->getLimit() << " <= " << this->upperLimit << "" << endl;
+    cout << "Limite | " << this->inferiorLimit << " <= " << this->getLimit() << " <= " << this->upperLimit << ""
+         << endl;
 
-    while (node != nullptr) {
+    while (node != nullptr)
+    {
         cout << node->getId() << ",";
         node = node->getNextNode();
         cont++;
@@ -774,8 +895,9 @@ void Graph::printNodes2() {
     // cout << "Fim" << endl;
 }
 
-void Graph::printNodes() {
-    Node* node = firstNode;
+void Graph::printNodes()
+{
+    Node *node = firstNode;
     int cont = 0;
 
     /*cout << this->inferiorLimit << " <=  ";
@@ -788,7 +910,8 @@ void Graph::printNodes() {
         cout << "Nao." << endl;
     }*/
 
-    while (node != nullptr) {
+    while (node != nullptr)
+    {
         cout << node->getId() << ",";
         node = node->getNextNode();
         cont++;
@@ -803,30 +926,35 @@ void Graph::printNodes() {
  *         string textStart: texto inicial a ser escrito
  *@return:
  ****************************************************************/
-void Graph::output(string outputFileName, vector<Graph*> solucao, float qualidadeSolucao) {
-    FILE* outfile = fopen(outputFileName.c_str(), "w+");
+void Graph::output(string outputFileName, vector<Graph *> solucao, float qualidadeSolucao)
+{
+    FILE *outfile = fopen(outputFileName.c_str(), "w+");
 
     string text = string("Solução da Clusterização Capacitada: \n\n");
     fwrite(text.c_str(), 1, text.size(), outfile);
 
-    for (int i = 0; i < this->quantidadeClusters; i++) {
-        Graph* cluster = solucao[i];
+    for (int i = 0; i < this->quantidadeClusters; i++)
+    {
+        Graph *cluster = solucao[i];
 
-        text = string("===============IMPRIME CLUSTER ") + std::to_string(i + 1) + string(" ===================") + "\n";
+        text = string("===============IMPRIME CLUSTER ") + std::to_string(i + 1) + string(" ===================") +
+               "\n";
         fwrite(text.c_str(), 1, text.size(), outfile);
 
         text = string("Beneficio do Cluster: ") + std::to_string(cluster->totalBeneficio) + "\n";
         fwrite(text.c_str(), 1, text.size(), outfile);
 
-        Node* node = cluster->getFirstNode();
+        Node *node = cluster->getFirstNode();
 
-        text = string("Limite | ") + std::to_string(cluster->inferiorLimit) + string(" <= ") + std::to_string(cluster->getLimit()) + string(" <= ") + std::to_string(cluster->upperLimit) + ": \n";
+        text = string("Limite | ") + std::to_string(cluster->inferiorLimit) + string(" <= ") +
+               std::to_string(cluster->getLimit()) + string(" <= ") + std::to_string(cluster->upperLimit) + ": \n";
         fwrite(text.c_str(), 1, text.size(), outfile);
 
         text = string("Nós do Cluster:  ");
         fwrite(text.c_str(), 1, text.size(), outfile);
 
-        while (node != nullptr) {
+        while (node != nullptr)
+        {
             text = std::to_string(node->getId()) + string(",");
             fwrite(text.c_str(), 1, text.size(), outfile);
             node = node->getNextNode();

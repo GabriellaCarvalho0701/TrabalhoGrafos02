@@ -18,6 +18,7 @@ using std::vector;
 
 class Node;
 class Edge;
+
 class Graph {
    public:
     Graph(size_t argc, char **argv);
@@ -61,9 +62,6 @@ class Graph {
 
     void criaArestas();
 
-    template <typename T>
-    void imprimeMatrizParaDebug(const vector<std::vector<T>> &matriz);
-
     vector<Graph *> guloso(vector<pair<int, int>> limiteClusters, bool randomizado, float *result, float semente);
     void algGulosoRandAdapt(vector<pair<int, int>> limitClusters);
     void algGuloso(vector<pair<int, int>> limitClusters);
@@ -87,6 +85,11 @@ class Graph {
     float totalBeneficio;
 
     // por daniel, para leitura do arquivo
+    void inicializaListaDeCandidatos();
+
+    Node * retornaNoValidoDosCandidatos(float min, float max);
+
+    std::list<int>* listaDeCandidatos;
     string pathArquivoEntrada;
     string pathArquivoSaida;
 

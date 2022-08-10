@@ -46,6 +46,7 @@ void processOperationChoice(Graph *graph, vector<pair<int, int>> limiteClusters)
     }
 }
 
+
 /*
  * Funcao principal, faz as leituras dos argumentos passados na linha de comentado
  * @params: argc: numero de arumentos
