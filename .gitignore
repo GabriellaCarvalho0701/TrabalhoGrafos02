@@ -1,0 +1,5 @@
+*.exe
+AlgoritmoGuloso.txt
+AlgoritmoGulosoRandomizadoAdaptativo.txt
+AlgoritmoGulosoRandomizadoReativo.txt
+*.json
