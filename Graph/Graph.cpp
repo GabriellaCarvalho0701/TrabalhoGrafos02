@@ -262,7 +262,8 @@ vector<pair<int, int>> Graph::processaPrimeiraLinhaRanRealSparse(const string& l
     return clustersLimites;
 }
 
-void Graph::leituraHandover(std::stringstream& fileIn) {
+vector<pair<int, int>> Graph::leituraHandover(std::stringstream &fileIn)
+{
     string linha;
     getline(fileIn, linha, '\n');
     int quantidadeNos = stoi(linha);
@@ -274,7 +275,10 @@ void Graph::leituraHandover(std::stringstream& fileIn) {
     this->upperLimit = stof(linha);  // todos tem os mesmos limites
     this->inferiorLimit = 0.0f;      // sempre 0.0f
 
-    for (int i = 0; i < this->quantidadeClusters; ++i) {
+    vector<pair<int, int>> clustersLimites(this->quantidadeClusters, {this->inferiorLimit,
+                                                                      this->upperLimit});  // clustersLimites[i] = (limiteInferior, limiteSuperior)
+    for (int i = 0; i < this->quantidadeClusters; ++i)
+    {
         //        this->inserirCluster(this->inferiorLimit,this->upperLimit);
     }
 
@@ -294,6 +298,7 @@ void Graph::leituraHandover(std::stringstream& fileIn) {
         this->matrizDistancia.push_back(aux);
     }
     // imprimeMatrizParaDebug(matrizDistancia);
+    return clustersLimites;
 }
 
 void Graph::criaArestas() {
@@ -320,27 +325,27 @@ void Graph::imprimeMatrizParaDebug(const std::vector<std::vector<T>>& matriz) {
     std::unitbuf(cout);
 }
 
-vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float* result, float alfa) {
-    vector<Graph*> solucao;
-    *result = 0;
-    bool* nosVisitados = new bool[getCounterOfNodes()];
+template<typename T>
+T returnRandom(T startRange, T endRange)
+{
+    return startRange + T(rand()) / T(RAND_MAX) * (endRange - startRange);
+}
+
+vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float *result, float alfa)
+{
+    vector<Graph *> solucao;
+    *result = 0.0f;
+    vector<bool> nosVisitados(getCounterOfNodes(), false);
     int contNosVisitados = 0;
-    vector<vector<bool>> arestasVisitadas;
+    vector<vector<bool>> arestasVisitadas(this->getCounterOfNodes(), vector<bool>(this->getCounterOfNodes(), false));
 
-    arestasVisitadas.resize(this->getCounterOfNodes());
-    for (int i = 0; i < this->getCounterOfNodes(); i++) {
-        arestasVisitadas[i].resize(this->getCounterOfNodes());
-        nosVisitados[i] = false;
-    }
-
-    float resultBeneficio = 0;
-
-    float beneficio = 0;
+    float resultBeneficio = 0.0f, beneficio = 0.0f;
 
     // criando os clusters da solucao
-    for (int i = 0; i < this->quantidadeClusters; i++) {
+    for (int i = 0; i < this->quantidadeClusters; i++)
+    {
         pair<int, int> limitCluster = limitClusters.at(i);
-        Graph* cluster = new Graph(limitCluster.first, limitCluster.second);
+        Graph *cluster = new Graph(limitCluster.first, limitCluster.second);
         solucao.push_back(cluster);
     }
 
@@ -350,7 +355,9 @@ vector<Graph*> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomiz
         Node* node = nullptr;
 
         if (randomizado)
-            position = (int)(rand() % ((int)(alfa * getCounterOfNodes())));
+        {
+            position = returnRandom(0.0f, alfa * (this->getCounterOfNodes() - 1));
+        }
 
         node = getNodeIfExist(position);
 
@@ -524,7 +531,6 @@ void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
     float result, semente;
     vector<Graph*> sol, melhorSol;
 
-    srand(time(nullptr));
     for (int i = 0; i < rand(); i++)
         semente = FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN)));
 
@@ -562,14 +568,12 @@ struct media {
     float media;
 };
 
-void inicializaVetores(vector<float>& prob, vector<media>& medias, int& numAlfas) {
-    media aux;
-    aux.soma = 0;
-    aux.numSolucoes = 0;
-    aux.media = 1;
-    float auxNumAlfas = numAlfas;
+void inicializaVetores(vector<float> &prob, vector<media> &medias, size_t numAlfas)
+{
+    media aux{0, 0, 1};
+    auto auxNumAlfas = numAlfas;
 
-    float auxProb = 1 / auxNumAlfas;
+    float auxProb = 1.0f / static_cast<float>(auxNumAlfas);
 
     for (int i = 0; i < numAlfas; i++) {
         prob.push_back(auxProb);
@@ -579,10 +583,12 @@ void inicializaVetores(vector<float>& prob, vector<media>& medias, int& numAlfas
 
 void atualizaProbabilidades(vector<media>& medias, vector<float>& prob, vector<float>& solBest, vector<float>& q) {
     float somaQ = 0;
+    float melhorSolucao = *(max_element(solBest.begin(), solBest.end()));
 
-    for (int i = 0; i < medias.size(); i++) {
-        q[i] = pow((solBest[i] / medias[i].media), 100);
-        somaQ = somaQ + q[i];
+    for (int i = 0; i < medias.size(); i++)
+    {
+        q[i] = pow((melhorSolucao / medias[i].media), 2);
+        somaQ += q[i];
     }
 
     for (int i = 0; i < medias.size(); i++) {
@@ -590,10 +596,11 @@ void atualizaProbabilidades(vector<media>& medias, vector<float>& prob, vector<f
     }
 }
 
-int escolheAlfa(vector<float>& prob) {
-    int alfaIndex;
-    int auxIndex;
-    vector<int> aux;
+float escolheAlfa(vector<float> &prob)
+{
+    float alfaIndex;
+    float auxIndex;
+    vector<float> aux;
 
     for (int i = 0; i < prob.size(); i++) {
         for (int j = 0; j < (int)(prob[i] * 100); j++) {
@@ -607,7 +614,8 @@ int escolheAlfa(vector<float>& prob) {
     return alfaIndex;
 }
 
-void atualizaMedias(vector<media>& medias, int solucao, vector<float>& alfas, float alfa) {
+void atualizaMedias(vector<media> &medias, float solucao, vector<float> &alfas, float alfa)
+{
     int aux;
     float auxSolucao;
 
@@ -629,7 +637,7 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
     time_t start, end;
     time(&start);
 
-    vector<float> alfas, solBest, probabilidade, q;
+    vector<float> alfas{0.05f, 0.10f, 0.15f, 0.3f, 0.5f}, solBest, probabilidade, q;
     vector<media> medias;
     int numIt = 60;
     int numBloco = 30;
@@ -638,16 +646,13 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
     float solucao;
     float auxAlfa;
 
-    for (int i = 0; i < numAlfas; i++) {
+    for (int i = 0; i < alfas.size(); i++)
+    {
         q.push_back(0.00);
         solBest.push_back(0.00);
     }
 
-    alfas.push_back(0.05);
-    alfas.push_back(0.10);
-    alfas.push_back(0.15);
-    alfas.push_back(0.30);
-    alfas.push_back(0.50);
+    inicializaVetores(probabilidade, medias, alfas.size());
 
     inicializaVetores(probabilidade, medias, numAlfas);
 
@@ -656,32 +661,35 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
             atualizaProbabilidades(medias, probabilidade, solBest, q);
         }
 
-        int index = escolheAlfa(probabilidade);
-        auxAlfa = alfas[index];
+        float index = escolheAlfa(probabilidade);
+        //auxAlfa = alfas[index];
 
         /**/
 
         float maiorBeneficio = 0;
         float result, semente;
-        vector<Graph*> sol, melhorSol;
-        sol = guloso(limitClusters, 1, &result, alfas[index]);
-        if (result > maiorBeneficio) {
+        vector<Graph *> sol, melhorSol;
+        sol = guloso(limitClusters, true, &result, index);
+        if (result > maiorBeneficio)
+        {
             maiorBeneficio = result;
             melhorSol = sol;
         }
 
         /**/
 
-        atualizaMedias(medias, maiorBeneficio, alfas, auxAlfa);
+        atualizaMedias(medias, maiorBeneficio, alfas, index);
 
         if (solBest[index] == 0 || solBest[index] > maiorBeneficio) {
             solBest[index] = maiorBeneficio;
         }
     }
 
-    int auxSolBest = 0;
-    for (int i = 0; i < solBest.size(); i++) {
-        if (solBest[i] > auxSolBest) {
+    float auxSolBest = 0;
+    for (int i = 0; i < solBest.size(); i++)
+    {
+        if (solBest[i] > auxSolBest)
+        {
             auxSolBest = solBest[i];
         }
     }

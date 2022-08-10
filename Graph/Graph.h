@@ -57,7 +57,7 @@ class Graph {
 
     vector<pair<int, int>> leituraRanRealeSparse(std::stringstream &fileIn);
 
-    void leituraHandover(std::stringstream &fileIn);
+    vector<pair<int, int>> leituraHandover(std::stringstream &fileIn);
 
     void criaArestas();
 
