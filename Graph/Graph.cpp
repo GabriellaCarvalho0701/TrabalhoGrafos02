@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include <cstdlib>
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -184,8 +185,10 @@ vector<pair<int, int>> Graph::leituraArquivo() {
         limiteClusters = this->leituraRanRealeSparse(fileIn);
     } else if (this->tipoInstancia == 2)  // Handover
     {
-        this->leituraHandover(fileIn);
-    } else {
+        limiteClusters = this->leituraHandover(fileIn);
+    }
+    else
+    {
         std::cerr << "\n[ERRO] tipo de instancia nao reconhecido\n(1)RanReal ou Sparse\n(2)Handover\n";
         exit(-1);
     }
@@ -596,15 +599,17 @@ void atualizaProbabilidades(vector<media>& medias, vector<float>& prob, vector<f
     }
 }
 
-float escolheAlfa(vector<float> &prob)
+float escolheAlfa(vector<float> &prob, vector<float> &alfas)
 {
     float alfaIndex;
     float auxIndex;
     vector<float> aux;
 
-    for (int i = 0; i < prob.size(); i++) {
-        for (int j = 0; j < (int)(prob[i] * 100); j++) {
-            aux.push_back(i);
+    for (int i = 0; i < prob.size(); i++)
+    {
+        for (int j = 0; j < (int) (prob[i] * 100); j++)
+        {
+            aux.push_back(alfas[i]);
         }
     }
 
@@ -661,7 +666,7 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
             atualizaProbabilidades(medias, probabilidade, solBest, q);
         }
 
-        float index = escolheAlfa(probabilidade);
+        float index = escolheAlfa(probabilidade, alfas);
         //auxAlfa = alfas[index];
 
         /**/
