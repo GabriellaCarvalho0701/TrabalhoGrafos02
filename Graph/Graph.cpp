@@ -563,9 +563,9 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
             }
 
             // embaralha aleatoriamente a lista de candidatos
-            for (int i = 0; i < listaCandidatos.size() - 1; i++) {
-                int j = i + rand() % (listaCandidatos.size() - i);
-                std::swap(listaCandidatos[i], listaCandidatos[j]);
+            for (int k = 0; k < listaCandidatos.size() - 1; k++) {
+                int j = k + rand() % (listaCandidatos.size() - k);
+                std::swap(listaCandidatos[k], listaCandidatos[j]);
             }
 
             // escolhe uma posição aleatória entre o 0 e o alfa
@@ -574,6 +574,12 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
             pair<float, pair<int, int>> candidate = listaCandidatos[position];
             float benefit = candidate.first;
             pair<int, int> nodePair = candidate.second;
+
+            // remove o elemento da lista
+            auto elem_to_remove = listaCandidatos.begin() + position;
+            if (elem_to_remove != listaCandidatos.end()) {
+                listaCandidatos.erase(elem_to_remove);
+            }
 
             Node *graphNode = cluster->getNodeIfExist(nodePair.first);
             Node *noExterno = getNodeIfExist(nodePair.second);
@@ -604,12 +610,6 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
 
                 nosVisitados[noExterno->getId()] = true;
                 contNosVisitados++;
-
-                // remove o elemento da lista após adicioná-lo em um cluster
-                auto elem_to_remove = listaCandidatos.begin() + position;
-                if (elem_to_remove != listaCandidatos.end()) {
-                    listaCandidatos.erase(elem_to_remove);
-                }
             }
         }
     }
@@ -664,6 +664,8 @@ void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
             maior = result;
             melhorSol = sol;
         }
+
+        cout << i << endl;
     }
 
     // imprimeCluster(sol, 2, maior);
@@ -724,9 +726,7 @@ float escolheAlfa(vector<float> &prob, vector<float> &alfas) {
         }
     }
 
-    r = rand() % 5;
-
-    return alfas[r];
+    return alfas[alfas.size() - 1];
 }
 
 void atualizaMedias(vector<media> &medias, float solucao, vector<float> &alfas, float alfa) {
