@@ -26,15 +26,15 @@ using std::cout;
 using std::endl;
 using std::fstream;
 
+using std::cin;
 using std::greater;
 using std::list;
 using std::make_pair;
 using std::pair;
 using std::priority_queue;
 using std::queue;
-using std::vector;
-
 using std::string;
+using std::vector;
 
 Graph::Graph(size_t argc, char **argv) : nodesTotal(0), edgesTotal(0), firstNode(nullptr), inferiorLimit(-1), upperLimit(-1), currentLimit(0) {
     if (argc != 4) {
@@ -569,7 +569,7 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
             }
 
             // escolhe uma posição aleatória entre o 0 e o alfa
-            float position = returnRandomFloat(0.0f, alfa);
+            float position = returnRandomFloat(0.0f, alfa * (listaCandidatos.size() - 1));
 
             pair<float, pair<int, int>> candidate = listaCandidatos[position];
             float benefit = candidate.first;
