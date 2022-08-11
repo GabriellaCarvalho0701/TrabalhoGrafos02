@@ -556,11 +556,12 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
             int clusterNoId = cluster->getFirstNode()->getId();
 
             for (int j = 0; j < this->getCounterOfNodes(); j++) {
-                if (!nosVisitados[j])
+                if (!nosVisitados[j]) {
                     listaCandidatos.push_back(make_pair(matrizDistancia[clusterNoId][j], make_pair(clusterNoId, j)));
+                }
             }
 
-            sort(listaCandidatos.begin(), listaCandidatos.end());
+            sort(listaCandidatos.begin(), listaCandidatos.end(), greater<>());
 
             // escolhe uma posição aleatória entre o 0 e o alfa
             int position = returnRandomFloat(0.0f, alfa * (listaCandidatos.size() - 1));
@@ -601,7 +602,16 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
 
                 nosVisitados[noExterno->getId()] = true;
                 contNosVisitados++;
+            } else {
+                // sem esse else, contnosVisitados sempre fica menor que o numero de nós, portanto loop infinito
+                // ou seria o correto dizer que nao possivel obter uma solucao ?
+                contNosVisitados++;
+                i;  // para debug
+                cout << "";
             }
+        }
+        if (listaDeCandidatos->empty()) {
+            break;
         }
     }
     delete this->listaDeCandidatos;
@@ -782,10 +792,10 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
             maiorBeneficio = result;
             melhorSol = sol;
             solBest[alfaEscolhido] = maiorBeneficio;
-        }
-        // todo: pode apagar  o vetor aqui ne? verifica 2x ai pra mim
-        for (auto &i : sol) {
-            delete i;
+        } else {
+            for (auto &s : sol) {
+                delete s;
+            }
         }
 
         /**/
@@ -952,6 +962,10 @@ void Graph::output(string outputFileName, vector<Graph *> solucao, float qualida
     fwrite(text.c_str(), 1, text.size(), outfile);
 
     cout << "O arquivo " << outputFileName << " foi gerado com sucesso.";
+
+    for (auto &s : solucao) {
+        delete s;
+    }
 }
 
 // float Graph::calculateBenefit(){
