@@ -562,12 +562,6 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
                     listaCandidatos.push_back(make_pair(matrizDistancia[clusterNoId][j], make_pair(clusterNoId, j)));
             }
 
-            // embaralha aleatoriamente a lista de candidatos
-            for (int k = 0; k < listaCandidatos.size() - 1; k++) {
-                int j = k + rand() % (listaCandidatos.size() - k);
-                std::swap(listaCandidatos[k], listaCandidatos[j]);
-            }
-
             // escolhe uma posição aleatória entre o 0 e o alfa
             float position = returnRandomFloat(0.0f, alfa * (listaCandidatos.size() - 1));
 
@@ -576,10 +570,7 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
             pair<int, int> nodePair = candidate.second;
 
             // remove o elemento da lista
-            auto elem_to_remove = listaCandidatos.begin() + position;
-            if (elem_to_remove != listaCandidatos.end()) {
-                listaCandidatos.erase(elem_to_remove);
-            }
+            listaCandidatos.erase(listaCandidatos.begin() + position);
 
             Node *graphNode = cluster->getNodeIfExist(nodePair.first);
             Node *noExterno = getNodeIfExist(nodePair.second);
@@ -665,7 +656,7 @@ void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
             melhorSol = sol;
         }
 
-        cout << i << endl;
+        // cout << i << endl;
     }
 
     // imprimeCluster(sol, 2, maior);
