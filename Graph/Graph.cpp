@@ -597,12 +597,8 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
 
                 Node *noCluster = cluster->getFirstNode();
                 while (noCluster != nullptr) {
-                    if (arestasVisitadas[noExterno->getId()][noCluster->getId()] == false &&
-                        arestasVisitadas[noCluster->getId()][noExterno->getId()] == false) {
-                        cluster->totalBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
-                        resultBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
-                    }
-
+                    cluster->totalBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
+                    resultBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
                     noCluster = noCluster->getNextNode();
                 }
 
@@ -727,6 +723,10 @@ float escolheAlfa(vector<float> &prob, vector<float> &alfas) {
             return alfas[i];
         }
     }
+
+    r = rand() % 5;
+
+    return alfas[r];
 }
 
 void atualizaMedias(vector<media> &medias, float solucao, vector<float> &alfas, float alfa) {
