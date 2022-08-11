@@ -511,6 +511,7 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, float *resul
 
 vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, float *result, float alfa) {
     vector<Graph *> solucao;
+    vector<Node*> nosFracassados; // aqueles que fracassaram em entrar em algum momento no cluster
     *result = 0.0f;
     vector<bool> nosVisitados(getCounterOfNodes(), false);
     int contNosVisitados = 0;
@@ -532,12 +533,6 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
         auto node = retornaNoValidoDosCandidatos(0.0f, alfa * (this->getCounterOfNodes() - 1));
 
         int position = node->getId();
-
-        if (node == nullptr || nosVisitados[position] == true) {
-            i--;
-            continue;
-        }
-
         nosVisitados[position] = true;
         contNosVisitados++;
 
@@ -547,25 +542,27 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
     }
 
     // while que garante que todos os nós estejam nas soluções
-    while (contNosVisitados < this->getCounterOfNodes()) {
+    while (contNosVisitados < this->getCounterOfNodes())
+    {
         // for que garante que todos os clusters sejam povoados
-        for (int i = 0; i < this->quantidadeClusters && contNosVisitados < this->getCounterOfNodes(); i++) {
+        for (int i = 0; i < this->quantidadeClusters && contNosVisitados < this->getCounterOfNodes(); i++)
+        {
             Graph *cluster = solucao[i];
             vector<pair<float, pair<int, int>>> listaCandidatos;
 
             int clusterNoId = cluster->getFirstNode()->getId();
 
-            for (int j = 0; j < this->getCounterOfNodes(); j++) {
-                if (!nosVisitados[j]) {
+            for (int j = 0; j < this->getCounterOfNodes(); j++)
+            {
+                if (!nosVisitados[j] )
+                {
                     listaCandidatos.push_back(make_pair(matrizDistancia[clusterNoId][j], make_pair(clusterNoId, j)));
                 }
             }
 
             sort(listaCandidatos.begin(), listaCandidatos.end(), greater<>());
-
             // escolhe uma posição aleatória entre o 0 e o alfa
-            int position = returnRandomFloat(0.0f, alfa * (listaCandidatos.size() -1));
-
+            int position = returnRandomFloat(0.0f, alfa * (listaCandidatos.size() - 1));
             pair<float, pair<int, int>> candidate = listaCandidatos[position];
             float benefit = candidate.first;
             pair<int, int> nodePair = candidate.second;
@@ -576,14 +573,16 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
             Node *graphNode = cluster->getNodeIfExist(nodePair.first);
             Node *noExterno = getNodeIfExist(nodePair.second);
 
-            if (graphNode == nullptr) {
+            if (graphNode == nullptr)
+            {
                 graphNode = cluster->getNodeIfExist(nodePair.second);
                 noExterno = getNodeIfExist(nodePair.first);
             }
 
             // verifica se o nó está apto a entrar no cluster
             if (
-                cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit && nosVisitados[noExterno->getId()] == false)
+                    cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit &&
+                    nosVisitados[noExterno->getId()] == false)
             {
                 cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
                 cluster->setLimit(noExterno->getWeight());
@@ -595,7 +594,8 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
                 arestasVisitadas[nodePair.second][nodePair.first] = true;
 
                 Node *noCluster = cluster->getFirstNode();
-                while (noCluster != nullptr) {
+                while (noCluster != nullptr)
+                {
                     cluster->totalBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
                     resultBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
                     noCluster = noCluster->getNextNode();
@@ -604,21 +604,47 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
                 nosVisitados[noExterno->getId()] = true;
                 contNosVisitados++;
             }
-            else{
+            if (listaCandidatos.empty())
+            {
+                break;
+            }
+            else {
                 // sem esse else, contnosVisitados sempre fica menor que o numero de nós, portanto loop infinito
                 // ou seria o correto dizer que nao possivel obter uma solucao ?
                 contNosVisitados++;
-                i; // para debug
-                cout << "";
+                nosFracassados.push_back(noExterno);
             }
-        }
-        if (listaDeCandidatos->empty()) {
-            break;
         }
     }
     delete this->listaDeCandidatos;
 
     *result = resultBeneficio;
+
+    bool fracassou = false;
+    int contador = 0;
+    for (int i = 0; i < nosFracassados.size(); ++i)
+    {
+        for (auto cluster: solucao)
+        {
+            if (cluster->getNodeIfExist(nosFracassados[i]->getId()) == nullptr)
+            {
+                ++contador;
+            }
+        }
+        if (contador == solucao.size())
+        {
+            fracassou = true;
+            break;
+        }
+    }
+
+    if (fracassou)
+    {
+        cout << "";
+    }
+    return (fracassou) ? vector<Graph *>() : solucao;
+
+
     return solucao;
 }
 
@@ -788,8 +814,14 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
         cout << "Semente de randomizacao: " << alfaEscolhido << endl;
 
         sol = gulosoRandomizado(limitClusters, &result, alfaEscolhido);
-        cout << "Beneficio: " << result << endl
-             << endl;
+        if (sol.empty()) {
+            cout << "Nao conseguiu nenhuma solucao viavel" << endl;
+        }
+        else
+        {
+            cout << "Beneficio: " << result << endl
+                    << endl;
+        }
         if (result > maiorBeneficio) {
             maiorBeneficio = result;
             melhorSol = sol;
