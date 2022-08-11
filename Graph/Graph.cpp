@@ -533,8 +533,6 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
 
         int position = node->getId();
 
-        // auto node = getNodeIfExist(position);
-
         if (node == nullptr || nosVisitados[position] == true) {
             i--;
             continue;
@@ -562,24 +560,17 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
                     listaCandidatos.push_back(make_pair(matrizDistancia[clusterNoId][j], make_pair(clusterNoId, j)));
             }
 
-            // embaralha aleatoriamente a lista de candidatos
-            for (int k = 0; k < listaCandidatos.size() - 1; k++) {
-                int j = k + rand() % (listaCandidatos.size() - k);
-                std::swap(listaCandidatos[k], listaCandidatos[j]);
-            }
+            sort(listaCandidatos.begin(), listaCandidatos.end());
 
             // escolhe uma posição aleatória entre o 0 e o alfa
-            float position = returnRandomFloat(0.0f, alfa);
+            int position = returnRandomFloat(0.0f, alfa * (listaCandidatos.size() -1));
 
             pair<float, pair<int, int>> candidate = listaCandidatos[position];
             float benefit = candidate.first;
             pair<int, int> nodePair = candidate.second;
 
             // remove o elemento da lista
-            auto elem_to_remove = listaCandidatos.begin() + position;
-            if (elem_to_remove != listaCandidatos.end()) {
-                listaCandidatos.erase(elem_to_remove);
-            }
+            listaCandidatos.erase(listaCandidatos.begin() + position);
 
             Node *graphNode = cluster->getNodeIfExist(nodePair.first);
             Node *noExterno = getNodeIfExist(nodePair.second);
@@ -613,6 +604,7 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
             }
         }
     }
+    delete this->listaDeCandidatos;
 
     *result = resultBeneficio;
     return solucao;
@@ -753,15 +745,15 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
     vector<float> alfas{0.05f, 0.10f, 0.15f, 0.30f, 0.50f}, solBest, probabilidade, q;
     vector<media> medias;
     vector<Graph *> sol, melhorSol;
-    int numIt = 90;
-    int numBloco = 30;
+    int numIt = 2500;
+    int numBloco = 50;
     float solucao;
     float maiorBeneficio = 0;
 
-    cout << "Escolha quantas interações: " << endl;
-    cin >> numIt;
-    cout << "Escolha o tamanho do bloco: " << endl;
-    cin >> numBloco;
+//    cout << "Escolha quantas interações: " << endl;
+//    cin >> numIt;
+//    cout << "Escolha o tamanho do bloco: " << endl;
+//    cin >> numBloco;
 
     for (int i = 0; i < alfas.size(); i++) {
         q.push_back(0.00f);
@@ -790,6 +782,11 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
             maiorBeneficio = result;
             melhorSol = sol;
             solBest[alfaEscolhido] = maiorBeneficio;
+        }
+        // todo: pode apagar  o vetor aqui ne? verifica 2x ai pra mim
+        for (auto & i : sol)
+        {
+            delete i;
         }
 
         /**/
