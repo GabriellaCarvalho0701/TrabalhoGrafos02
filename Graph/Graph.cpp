@@ -509,76 +509,6 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, float *resul
     return solucao;
 }
 
-/*void mergeSortedIntervals(std::list<pair<float, pair<int, int>>> &listaCandidatos, int start, int mid, int end) {
-    std::list<pair<float, pair<int, int>>> temp;
-
-    int i, j;
-    i = start;
-    j = mid + 1;
-
-    std::list<pair<float, pair<int, int>>>::iterator it = listaCandidatos.begin();
-
-    // Print the element at the it
-    // cout << *it;
-
-    while (i <= mid && j <= end) {
-        advance(it, i);
-        pair<float, pair<int, int>> candidateI = *it;
-        float beneficioI = candidateI.first;
-        // pair<int, int> parNoI = candidate.second;
-        advance(it, j);
-        pair<float, pair<int, int>> candidateJ = *it;
-        float beneficioJ = candidateJ.first;
-        // pair<int, int> parNoJ = candidate.second;
-
-        if (beneficioI >= beneficioJ) {
-            temp.push_back(candidateI);
-            ++i;
-        } else {
-            temp.push_back(candidateJ);
-            ++j;
-        }
-    }
-
-    while (i <= mid) {
-        advance(it, i);
-        pair<float, pair<int, int>> candidateI = *it;
-        temp.push_back(candidateI);
-        ++i;
-    }
-
-    while (j <= end) {
-        advance(it, j);
-        pair<float, pair<int, int>> candidateJ = *it;
-        temp.push_back(candidateJ);
-        ++j;
-    }
-
-    for (int i = start; i <= end; ++i) {
-        advance(it, i - start);
-        pair<float, pair<int, int>> candidate = *it;
-        advance(it, i);
-        listaCandidatos.insert(candidate);
-    }
-    // listaCandidatos[i] = temp[i - start];
-}
-
-/*
- * Função para ordernar um vetor de arestas atraves de merge sort
- *@params: vector<Edge *>& vector: vetor de aretas a ser ordenado
-           int start: posicao inicial
-           int end: final do vetor
- *@return:
- ****************************************************************/
-/*void mergeSort(std::list<pair<float, pair<int, int>>> &listaCandidatos, int start, int end) {
-    if (start < end) {
-        int mid = (start + end) / 2;
-        mergeSort(listaCandidatos, start, mid);
-        mergeSort(listaCandidatos, mid + 1, end);
-        mergeSortedIntervals(listaCandidatos, start, mid, end);
-    }
-}*/
-
 vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, float *result, float alfa) {
     vector<Graph *> solucao;
     *result = 0.0f;
@@ -623,45 +553,41 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
         // for que garante que todos os clusters sejam povoados
         for (int i = 0; i < this->quantidadeClusters && contNosVisitados < this->getCounterOfNodes(); i++) {
             Graph *cluster = solucao[i];
-            vector<pair<float, pair<int, int>>> candidateList;
+            vector<pair<float, pair<int, int>>> listaCandidatos;
 
-            int cluisterNodeId = cluster->getFirstNode()->getId();
+            int clusterNoId = cluster->getFirstNode()->getId();
 
             for (int j = 0; j < this->getCounterOfNodes(); j++) {
                 if (!nosVisitados[j])
-                    candidateList.push_back(make_pair(matrizDistancia[cluisterNodeId][j], make_pair(cluisterNodeId, j)));
+                    listaCandidatos.push_back(make_pair(matrizDistancia[clusterNoId][j], make_pair(clusterNoId, j)));
             }
 
-            for (int i = 0; i < candidateList.size() - 1; i++) {
-                int j = i + rand() % (candidateList.size() - i);
-                std::swap(candidateList[i], candidateList[j]);
+            // embaralha aleatoriamente a lista de candidatos
+            for (int i = 0; i < listaCandidatos.size() - 1; i++) {
+                int j = i + rand() % (listaCandidatos.size() - i);
+                std::swap(listaCandidatos[i], listaCandidatos[j]);
             }
 
+            // escolhe uma posição aleatória entre o 0 e o alfa
             float position = returnRandomFloat(0.0f, alfa);
 
-            // Print the element at the it
-            // cout << *it;
-
-            pair<float, pair<int, int>> candidate = candidateList[position];
+            pair<float, pair<int, int>> candidate = listaCandidatos[position];
             float benefit = candidate.first;
             pair<int, int> nodePair = candidate.second;
-            auto elem_to_remove = candidateList.begin() + position;
-            if (elem_to_remove != candidateList.end()) {
-                candidateList.erase(elem_to_remove);
-            }
 
             Node *graphNode = cluster->getNodeIfExist(nodePair.first);
-            Node *externalNode = getNodeIfExist(nodePair.second);
+            Node *noExterno = getNodeIfExist(nodePair.second);
 
             if (graphNode == nullptr) {
                 graphNode = cluster->getNodeIfExist(nodePair.second);
-                externalNode = getNodeIfExist(nodePair.first);
+                noExterno = getNodeIfExist(nodePair.first);
             }
 
+            // verifica se o nó está apto a entrar no cluster
             if (
-                cluster->getLimit() + externalNode->getWeight() <= cluster->upperLimit && nosVisitados[externalNode->getId()] == false) {
-                cluster->createNodeIfDoesntExist(externalNode->getId(), externalNode->getWeight());
-                cluster->setLimit(externalNode->getWeight());
+                cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit && nosVisitados[noExterno->getId()] == false) {
+                cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
+                cluster->setLimit(noExterno->getWeight());
 
                 cluster->totalBeneficio += benefit;
                 resultBeneficio += benefit;
@@ -671,24 +597,28 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
 
                 Node *noCluster = cluster->getFirstNode();
                 while (noCluster != nullptr) {
-                    if (arestasVisitadas[externalNode->getId()][noCluster->getId()] == false &&
-                        arestasVisitadas[noCluster->getId()][externalNode->getId()] == false) {
-                        cluster->totalBeneficio += matrizDistancia[externalNode->getId()][noCluster->getId()];
-                        resultBeneficio += matrizDistancia[externalNode->getId()][noCluster->getId()];
-                        // cout << externalNode->getId() << " - " << noCluster->getId() << endl;
+                    if (arestasVisitadas[noExterno->getId()][noCluster->getId()] == false &&
+                        arestasVisitadas[noCluster->getId()][noExterno->getId()] == false) {
+                        cluster->totalBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
+                        resultBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
                     }
 
                     noCluster = noCluster->getNextNode();
                 }
 
-                nosVisitados[externalNode->getId()] = true;
+                nosVisitados[noExterno->getId()] = true;
                 contNosVisitados++;
+
+                // remove o elemento da lista após adicioná-lo em um cluster
+                auto elem_to_remove = listaCandidatos.begin() + position;
+                if (elem_to_remove != listaCandidatos.end()) {
+                    listaCandidatos.erase(elem_to_remove);
+                }
             }
         }
     }
 
     *result = resultBeneficio;
-    delete this->listaDeCandidatos;
     return solucao;
 }
 
