@@ -52,7 +52,8 @@ void processOperationChoice(Graph *graph, vector<pair<int, int>> limiteClusters)
  * @return:
  ****************************************************************/
 int main(int argc, char *argv[]) {
-    srand(time(nullptr));
+    long int aux = time(nullptr);
+    srand(aux);
     auto *graph = new Graph(argc, argv);
     vector<pair<int, int>> limiteClusters = graph->leituraArquivo();
 

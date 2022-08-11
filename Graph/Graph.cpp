@@ -520,7 +520,7 @@ void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
 
     cout << std::setprecision(2) << std::fixed;
     delete timer;
-    cout << "Qualidade Solucao: " << qualidadeSolucao(result) << "%" << endl;
+    cout << "Beneficio da Solucao: " << result << endl;
     if (result > 0) {
         cout << "Conseguiu alguma solucao viavel" << endl;
     } else {
@@ -535,16 +535,17 @@ void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
     Timer *timer = new Timer("Tempo de Execucao: ");
 
     float maior = 0;
-    float result, semente;
+    float result, alfa;
+
+    cout << "Escolha um alfa: " << endl;
+    cin >> alfa;
+
     vector<Graph *> sol, melhorSol;
 
-    for (int i = 0; i < rand(); i++)
-        semente = FLOAT_MIN + (float)(rand()) / ((float)(RAND_MAX / (FLOAT_MAX - FLOAT_MIN)));
+    cout << "Alfa de randomizacao: " << alfa << endl;
 
-    cout << "Semente de randomizacao: " << semente << endl;
-
-    for (int i = 0; i < 100; i++) {
-        sol = guloso(limitClusters, 1, &result, semente);
+    for (int i = 0; i < 500; i++) {
+        sol = guloso(limitClusters, 1, &result, alfa);
         if (result > maior) {
             maior = result;
             melhorSol = sol;
@@ -555,8 +556,8 @@ void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
 
     cout << std::setprecision(2) << std::fixed;
     delete timer;
-    cout << "Melhor Solucao: " << maior << endl;
-    cout << "Qualidade Solucao: " << qualidadeSolucao(maior) << "%" << endl;
+    cout << "Beneficio da Melhor Solucao: " << maior << endl;
+    // cout << "Qualidade Solucao: " << qualidadeSolucao(maior) << "%" << endl;
     if (maior > 0) {
         cout << "Conseguiu alguma solucao viavel" << endl;
     } else {
@@ -589,7 +590,7 @@ void atualizaProbabilidades(vector<media> &medias, vector<float> &prob, vector<f
     float melhorSolucao = *(max_element(solBest.begin(), solBest.end()));
 
     for (int i = 0; i < medias.size(); i++) {
-        q[i] = pow((melhorSolucao / medias[i].media), 2);
+        q[i] = pow((melhorSolucao / medias[i].media), 10);
         somaQ += q[i];
     }
 
@@ -599,21 +600,15 @@ void atualizaProbabilidades(vector<media> &medias, vector<float> &prob, vector<f
 }
 
 float escolheAlfa(vector<float> &prob, vector<float> &alfas) {
-    float alfaIndex;
-    size_t auxIndex;
-    vector<float> listaPesada;
+    float soma = 0;
+    int r = rand() % 101;
 
     for (int i = 0; i < prob.size(); i++) {
-        for (int j = 0; j < (int)(prob[i] * 100); j++) {
-            listaPesada.push_back(alfas[i]);
+        soma += (prob[i] * 100);
+        if (soma >= r) {
+            return alfas[i];
         }
     }
-
-    auxIndex = rand() % listaPesada.size();
-    // cout << "auxIndex: " << auxIndex << "valor: " << listaPesada[auxIndex] << endl;
-    alfaIndex = listaPesada[auxIndex];
-
-    return alfaIndex;
 }
 
 void atualizaMedias(vector<media> &medias, float solucao, vector<float> &alfas, float alfa) {
@@ -640,7 +635,7 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
     vector<float> alfas{0.05f, 0.10f, 0.15f, 0.30f, 0.50f}, solBest, probabilidade, q;
     vector<media> medias;
     vector<Graph *> sol, melhorSol;
-    int numIt = 10;
+    int numIt = 90;
     int numBloco = 30;
     float solucao;
     float maiorBeneficio = 0;
@@ -652,8 +647,8 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
 
     inicializaVetores(probabilidade, medias, alfas.size());
 
-    for (int i = 0; i < numIt; i++) {
-        if (i != 0 && i % numBloco == 0) {
+    for (int i = 1; i <= numIt; i++) {
+        if (i % numBloco == 0) {
             atualizaProbabilidades(medias, probabilidade, solBest, q);
         }
 
@@ -688,9 +683,9 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
 
     cout << std::setprecision(2) << std::fixed;
     delete timer;
-    cout << "Melhor Solucao: " << auxSolBest << endl;
+    cout << "Beneficio da Melhor Solucao: " << auxSolBest << endl;
     // cout << "Semente da melhor solucao: " << alfas[auxSolBest] << endl;
-    cout << "Qualidade Solucao: " << qualidadeSolucao(auxSolBest) << "%" << endl;
+    // cout << "Qualidade Solucao: " << qualidadeSolucao(auxSolBest) << "%" << endl;
     if (auxSolBest > 0) {
         cout << "Conseguiu alguma solucao viavel" << endl;
     } else {
@@ -725,7 +720,7 @@ float Graph::qualidadeSolucao(float resultadoObtido) {
         resEsperado = 920.00;
     }
 
-    return ((resultadoObtido * 100) / resEsperado);
+    return resultadoObtido;
 }
 
 void Graph::imprimeCluster(vector<Graph *> solucao, int option, float resultBeneficio) {
