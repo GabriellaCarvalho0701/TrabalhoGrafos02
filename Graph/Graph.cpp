@@ -26,15 +26,15 @@ using std::cout;
 using std::endl;
 using std::fstream;
 
+using std::cin;
 using std::greater;
 using std::list;
 using std::make_pair;
 using std::pair;
 using std::priority_queue;
 using std::queue;
-using std::vector;
-
 using std::string;
+using std::vector;
 
 Graph::Graph(size_t argc, char **argv) : nodesTotal(0), edgesTotal(0), firstNode(nullptr), inferiorLimit(-1), upperLimit(-1), currentLimit(0) {
     if (argc != 4) {
@@ -563,7 +563,7 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
             sort(listaCandidatos.begin(), listaCandidatos.end());
 
             // escolhe uma posição aleatória entre o 0 e o alfa
-            int position = returnRandomFloat(0.0f, alfa * (listaCandidatos.size() -1));
+            int position = returnRandomFloat(0.0f, alfa * (listaCandidatos.size() - 1));
 
             pair<float, pair<int, int>> candidate = listaCandidatos[position];
             float benefit = candidate.first;
@@ -750,10 +750,10 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
     float solucao;
     float maiorBeneficio = 0;
 
-//    cout << "Escolha quantas interações: " << endl;
-//    cin >> numIt;
-//    cout << "Escolha o tamanho do bloco: " << endl;
-//    cin >> numBloco;
+    //    cout << "Escolha quantas interações: " << endl;
+    //    cin >> numIt;
+    //    cout << "Escolha o tamanho do bloco: " << endl;
+    //    cin >> numBloco;
 
     for (int i = 0; i < alfas.size(); i++) {
         q.push_back(0.00f);
@@ -784,8 +784,7 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
             solBest[alfaEscolhido] = maiorBeneficio;
         }
         // todo: pode apagar  o vetor aqui ne? verifica 2x ai pra mim
-        for (auto & i : sol)
-        {
+        for (auto &i : sol) {
             delete i;
         }
 
