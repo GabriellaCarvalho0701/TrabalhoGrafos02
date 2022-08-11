@@ -341,7 +341,8 @@ Node *Graph::retornaNoValidoDosCandidatos(float min, float max) {
         i++;
     }
 }
-vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomizado, float *result, float alfa) {
+
+vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, float *result, float alfa) {
     vector<Graph *> solucao;
     *result = 0.0f;
     vector<bool> nosVisitados(getCounterOfNodes(), false);
@@ -359,7 +360,7 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomi
     inicializaListaDeCandidatos();
     // sorteando aleatoriamente um nó para iniciar cada cluster
     for (int i = 0; i < this->quantidadeClusters; i++) {
-        auto node = (randomizado) ? retornaNoValidoDosCandidatos(0.0f, alfa * (this->getCounterOfNodes() - 1)) : this->getNodeIfExist(i);
+        auto node = this->getNodeIfExist(i);
 
         int position = node->getId();
 
@@ -508,6 +509,189 @@ vector<Graph *> Graph::guloso(vector<pair<int, int>> limitClusters, bool randomi
     return solucao;
 }
 
+/*void mergeSortedIntervals(std::list<pair<float, pair<int, int>>> &listaCandidatos, int start, int mid, int end) {
+    std::list<pair<float, pair<int, int>>> temp;
+
+    int i, j;
+    i = start;
+    j = mid + 1;
+
+    std::list<pair<float, pair<int, int>>>::iterator it = listaCandidatos.begin();
+
+    // Print the element at the it
+    // cout << *it;
+
+    while (i <= mid && j <= end) {
+        advance(it, i);
+        pair<float, pair<int, int>> candidateI = *it;
+        float beneficioI = candidateI.first;
+        // pair<int, int> parNoI = candidate.second;
+        advance(it, j);
+        pair<float, pair<int, int>> candidateJ = *it;
+        float beneficioJ = candidateJ.first;
+        // pair<int, int> parNoJ = candidate.second;
+
+        if (beneficioI >= beneficioJ) {
+            temp.push_back(candidateI);
+            ++i;
+        } else {
+            temp.push_back(candidateJ);
+            ++j;
+        }
+    }
+
+    while (i <= mid) {
+        advance(it, i);
+        pair<float, pair<int, int>> candidateI = *it;
+        temp.push_back(candidateI);
+        ++i;
+    }
+
+    while (j <= end) {
+        advance(it, j);
+        pair<float, pair<int, int>> candidateJ = *it;
+        temp.push_back(candidateJ);
+        ++j;
+    }
+
+    for (int i = start; i <= end; ++i) {
+        advance(it, i - start);
+        pair<float, pair<int, int>> candidate = *it;
+        advance(it, i);
+        listaCandidatos.insert(candidate);
+    }
+    // listaCandidatos[i] = temp[i - start];
+}
+
+/*
+ * Função para ordernar um vetor de arestas atraves de merge sort
+ *@params: vector<Edge *>& vector: vetor de aretas a ser ordenado
+           int start: posicao inicial
+           int end: final do vetor
+ *@return:
+ ****************************************************************/
+/*void mergeSort(std::list<pair<float, pair<int, int>>> &listaCandidatos, int start, int end) {
+    if (start < end) {
+        int mid = (start + end) / 2;
+        mergeSort(listaCandidatos, start, mid);
+        mergeSort(listaCandidatos, mid + 1, end);
+        mergeSortedIntervals(listaCandidatos, start, mid, end);
+    }
+}*/
+
+vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, float *result, float alfa) {
+    vector<Graph *> solucao;
+    *result = 0.0f;
+    vector<bool> nosVisitados(getCounterOfNodes(), false);
+    int contNosVisitados = 0;
+    vector<vector<bool>> arestasVisitadas(this->getCounterOfNodes(), vector<bool>(this->getCounterOfNodes(), false));
+
+    float resultBeneficio = 0.0f, beneficio = 0.0f;
+
+    // criando os clusters da solucao
+    for (int i = 0; i < this->quantidadeClusters; i++) {
+        pair<int, int> limitCluster = limitClusters.at(i);
+        Graph *cluster = new Graph(limitCluster.first, limitCluster.second);
+        solucao.push_back(cluster);
+    }
+
+    inicializaListaDeCandidatos();
+
+    // sorteando aleatoriamente um nó para iniciar cada cluster
+    for (int i = 0; i < this->quantidadeClusters; i++) {
+        auto node = retornaNoValidoDosCandidatos(0.0f, alfa * (this->getCounterOfNodes() - 1));
+
+        int position = node->getId();
+
+        // auto node = getNodeIfExist(position);
+
+        if (node == nullptr || nosVisitados[position] == true) {
+            i--;
+            continue;
+        }
+
+        nosVisitados[position] = true;
+        contNosVisitados++;
+
+        Graph *cluster = solucao[i];
+        cluster->createNodeIfDoesntExist(position, node->getWeight());
+        cluster->setLimit(node->getWeight());
+    }
+
+    // while que garante que todos os nós estejam nas soluções
+    while (contNosVisitados < this->getCounterOfNodes()) {
+        // for que garante que todos os clusters sejam povoados
+        for (int i = 0; i < this->quantidadeClusters && contNosVisitados < this->getCounterOfNodes(); i++) {
+            Graph *cluster = solucao[i];
+            vector<pair<float, pair<int, int>>> candidateList;
+
+            int cluisterNodeId = cluster->getFirstNode()->getId();
+
+            for (int j = 0; j < this->getCounterOfNodes(); j++) {
+                if (!nosVisitados[j])
+                    candidateList.push_back(make_pair(matrizDistancia[cluisterNodeId][j], make_pair(cluisterNodeId, j)));
+            }
+
+            for (int i = 0; i < candidateList.size() - 1; i++) {
+                int j = i + rand() % (candidateList.size() - i);
+                std::swap(candidateList[i], candidateList[j]);
+            }
+
+            float position = returnRandomFloat(0.0f, alfa);
+
+            // Print the element at the it
+            // cout << *it;
+
+            pair<float, pair<int, int>> candidate = candidateList[position];
+            float benefit = candidate.first;
+            pair<int, int> nodePair = candidate.second;
+            auto elem_to_remove = candidateList.begin() + position;
+            if (elem_to_remove != candidateList.end()) {
+                candidateList.erase(elem_to_remove);
+            }
+
+            Node *graphNode = cluster->getNodeIfExist(nodePair.first);
+            Node *externalNode = getNodeIfExist(nodePair.second);
+
+            if (graphNode == nullptr) {
+                graphNode = cluster->getNodeIfExist(nodePair.second);
+                externalNode = getNodeIfExist(nodePair.first);
+            }
+
+            if (
+                cluster->getLimit() + externalNode->getWeight() <= cluster->upperLimit && nosVisitados[externalNode->getId()] == false) {
+                cluster->createNodeIfDoesntExist(externalNode->getId(), externalNode->getWeight());
+                cluster->setLimit(externalNode->getWeight());
+
+                cluster->totalBeneficio += benefit;
+                resultBeneficio += benefit;
+
+                arestasVisitadas[nodePair.first][nodePair.second] = true;
+                arestasVisitadas[nodePair.second][nodePair.first] = true;
+
+                Node *noCluster = cluster->getFirstNode();
+                while (noCluster != nullptr) {
+                    if (arestasVisitadas[externalNode->getId()][noCluster->getId()] == false &&
+                        arestasVisitadas[noCluster->getId()][externalNode->getId()] == false) {
+                        cluster->totalBeneficio += matrizDistancia[externalNode->getId()][noCluster->getId()];
+                        resultBeneficio += matrizDistancia[externalNode->getId()][noCluster->getId()];
+                        // cout << externalNode->getId() << " - " << noCluster->getId() << endl;
+                    }
+
+                    noCluster = noCluster->getNextNode();
+                }
+
+                nosVisitados[externalNode->getId()] = true;
+                contNosVisitados++;
+            }
+        }
+    }
+
+    *result = resultBeneficio;
+    delete this->listaDeCandidatos;
+    return solucao;
+}
+
 constexpr int FLOAT_MIN = 0;
 constexpr int FLOAT_MAX = 1;
 
@@ -516,7 +700,7 @@ void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
 
     float result = 0;
 
-    vector<Graph *> sol = guloso(limitClusters, 0, &result, 0);
+    vector<Graph *> sol = guloso(limitClusters, &result, 0);
 
     cout << std::setprecision(2) << std::fixed;
     delete timer;
@@ -527,8 +711,8 @@ void Graph::algGuloso(vector<pair<int, int>> limitClusters) {
         cout << "Nao conseguiu nenhuma solucao viavel" << endl;
     }
 
-    // imprimeCluster(sol, 2, result);
-    output("AlgoritmoGuloso.txt", sol, qualidadeSolucao(result));
+    // imprimeCluster(sol, 1, result);
+    //  output("AlgoritmoGuloso.txt", sol, qualidadeSolucao(result));
 }
 
 void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
@@ -536,16 +720,20 @@ void Graph::algGulosoRandAdapt(vector<pair<int, int>> limitClusters) {
 
     float maior = 0;
     float result, alfa;
+    int numIt = 500;
 
     cout << "Escolha um alfa: " << endl;
     cin >> alfa;
+
+    /*cout << "Escolha quantas interações: " << endl;
+    cin >> numIt;*/
 
     vector<Graph *> sol, melhorSol;
 
     cout << "Alfa de randomizacao: " << alfa << endl;
 
-    for (int i = 0; i < 500; i++) {
-        sol = guloso(limitClusters, 1, &result, alfa);
+    for (int i = 0; i < numIt; i++) {
+        sol = gulosoRandomizado(limitClusters, &result, alfa);
         if (result > maior) {
             maior = result;
             melhorSol = sol;
@@ -590,7 +778,7 @@ void atualizaProbabilidades(vector<media> &medias, vector<float> &prob, vector<f
     float melhorSolucao = *(max_element(solBest.begin(), solBest.end()));
 
     for (int i = 0; i < medias.size(); i++) {
-        q[i] = pow((melhorSolucao / medias[i].media), 10);
+        q[i] = pow((melhorSolucao / medias[i].media), 2);
         somaQ += q[i];
     }
 
@@ -640,6 +828,11 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
     float solucao;
     float maiorBeneficio = 0;
 
+    cout << "Escolha quantas interações: " << endl;
+    cin >> numIt;
+    cout << "Escolha o tamanho do bloco: " << endl;
+    cin >> numBloco;
+
     for (int i = 0; i < alfas.size(); i++) {
         q.push_back(0.00f);
         solBest.push_back(0.00f);
@@ -660,7 +853,7 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
 
         cout << "Semente de randomizacao: " << alfaEscolhido << endl;
 
-        sol = guloso(limitClusters, true, &result, alfaEscolhido);
+        sol = gulosoRandomizado(limitClusters, &result, alfaEscolhido);
         cout << "Beneficio: " << result << endl
              << endl;
         if (result > maiorBeneficio) {

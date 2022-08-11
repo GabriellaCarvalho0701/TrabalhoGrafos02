@@ -62,7 +62,8 @@ class Graph {
 
     void criaArestas();
 
-    vector<Graph *> guloso(vector<pair<int, int>> limiteClusters, bool randomizado, float *result, float semente);
+    vector<Graph *> guloso(vector<pair<int, int>> limiteClusters, float *result, float semente);
+    vector<Graph *> gulosoRandomizado(vector<pair<int, int>> limitClusters, float *result, float alfa);
     void algGulosoRandAdapt(vector<pair<int, int>> limitClusters);
     void algGuloso(vector<pair<int, int>> limitClusters);
     void algGulosoReativo(vector<pair<int, int>> limitClusters);
@@ -87,9 +88,9 @@ class Graph {
     // por daniel, para leitura do arquivo
     void inicializaListaDeCandidatos();
 
-    Node * retornaNoValidoDosCandidatos(float min, float max);
+    Node *retornaNoValidoDosCandidatos(float min, float max);
 
-    std::list<int>* listaDeCandidatos;
+    std::list<int> *listaDeCandidatos;
     string pathArquivoEntrada;
     string pathArquivoSaida;
 
