@@ -533,8 +533,14 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
         auto node = retornaNoValidoDosCandidatos(0.0f, alfa * (this->getCounterOfNodes() - 1));
 
         int position = node->getId();
+        if (node == nullptr || nosVisitados[position] == true) {
+            i--;
+            continue;
+        }
         nosVisitados[position] = true;
         contNosVisitados++;
+
+
 
         Graph *cluster = solucao[i];
         cluster->createNodeIfDoesntExist(position, node->getWeight());
@@ -604,16 +610,17 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
                 nosVisitados[noExterno->getId()] = true;
                 contNosVisitados++;
             }
-            if (listaCandidatos.empty())
-            {
-                break;
-            }
             else {
                 // sem esse else, contnosVisitados sempre fica menor que o numero de nós, portanto loop infinito
                 // ou seria o correto dizer que nao possivel obter uma solucao ?
                 contNosVisitados++;
                 nosFracassados.push_back(noExterno);
             }
+            if (listaCandidatos.empty())
+            {
+                break;
+            }
+
         }
     }
     delete this->listaDeCandidatos;
