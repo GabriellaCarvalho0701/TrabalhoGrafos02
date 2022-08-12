@@ -26,15 +26,15 @@ using std::cout;
 using std::endl;
 using std::fstream;
 
+using std::cin;
 using std::greater;
 using std::list;
 using std::make_pair;
 using std::pair;
 using std::priority_queue;
 using std::queue;
-using std::vector;
-
 using std::string;
+using std::vector;
 
 constexpr int FLOAT_MIN = 0;
 constexpr int FLOAT_MAX = 1;
