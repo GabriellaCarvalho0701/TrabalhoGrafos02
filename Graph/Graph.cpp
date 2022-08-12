@@ -611,10 +611,42 @@ vector<Graph *> Graph::gulosoRandomizado(vector<pair<int, int>> limitClusters, f
                 contNosVisitados++;
             }
             else {
-                // sem esse else, contnosVisitados sempre fica menor que o numero de nós, portanto loop infinito
-                // ou seria o correto dizer que nao possivel obter uma solucao ?
-                contNosVisitados++;
-                nosFracassados.push_back(noExterno);
+                int contFracassos = 0;
+                for (auto cluster: solucao)
+                {
+                    if (
+                            cluster->getLimit() + noExterno->getWeight() <= cluster->upperLimit &&
+                            nosVisitados[noExterno->getId()] == false)
+                    {
+                        cluster->createNodeIfDoesntExist(noExterno->getId(), noExterno->getWeight());
+                        cluster->setLimit(noExterno->getWeight());
+
+                        cluster->totalBeneficio += benefit;
+                        resultBeneficio += benefit;
+
+                        arestasVisitadas[nodePair.first][nodePair.second] = true;
+                        arestasVisitadas[nodePair.second][nodePair.first] = true;
+
+                        Node *noCluster = cluster->getFirstNode();
+                        while (noCluster != nullptr)
+                        {
+                            cluster->totalBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
+                            resultBeneficio += matrizDistancia[noExterno->getId()][noCluster->getId()];
+                            noCluster = noCluster->getNextNode();
+                        }
+
+                        nosVisitados[noExterno->getId()] = true;
+                        contNosVisitados++;
+                    }
+                    else{
+                        contFracassos++;
+                    }
+                }
+                if (contFracassos == this->quantidadeClusters)
+                {
+                    delete this->listaDeCandidatos;
+                    return vector<Graph *>();
+                }
             }
             if (listaCandidatos.empty())
             {
@@ -822,7 +854,7 @@ void Graph::algGulosoReativo(vector<pair<int, int>> limitClusters) {
 
         sol = gulosoRandomizado(limitClusters, &result, alfaEscolhido);
         if (sol.empty()) {
-            cout << "Nao conseguiu nenhuma solucao viavel" << endl;
+            cout << "Nao conseguiu nenhuma solucao viavell" << endl;
         }
         else
         {
