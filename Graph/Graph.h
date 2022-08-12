@@ -21,24 +21,22 @@ class Edge;
 class Graph;
 
 class Edge {
-public:
+   public:
     Edge(Node *headNode, Node *tailNode, float weight, Graph *graph);
-    ~Edge()
-    {
-
+    ~Edge() {
     }
 
-    void setNextEdge(Edge* nextEdge);
-    Edge* getNextEdge();
+    void setNextEdge(Edge *nextEdge);
+    Edge *getNextEdge();
 
     int getId();
-    Node* getTailNode();
-    Node* getHeadNode();
+    Node *getTailNode();
+    Node *getHeadNode();
 
     int getWeight();
     // int edgeCost(Node *nodeHead, Node *tailNode);
 
-private:
+   private:
     int id;
     float weight;
     Node *tailNode;
@@ -51,8 +49,8 @@ class Node {
     Id: não pode repetir -> a partir do contador incrementado
     Pk: a partir da entrada do txt -> sem repetir
     */
-public:
-    Node(int id, float weight, Graph* graph);
+   public:
+    Node(int id, float weight, Graph *graph);
     ~Node() {
         delete this->nextNode;
     }
@@ -61,11 +59,11 @@ public:
     int getPkId();
     int getId();
 
-    Node* getNextNode();
-    void setNextNode(Node* node);
+    Node *getNextNode();
+    void setNextNode(Node *node);
 
-    Edge* getFirstEdge();
-    void setFirstEdge(Edge* firstEdge);
+    Edge *getFirstEdge();
+    void setFirstEdge(Edge *firstEdge);
 
     void incrementDegreeOut();
     void incrementDegreeIn();
@@ -74,18 +72,17 @@ public:
     int getGrauOut();
 
     int getWeight();
-    vector<Edge*> getAdjacentsEdges();
+    vector<Edge *> getAdjacentsEdges();
 
-private:
+   private:
     int pk;  // Primary Key = ID Único
     int id;
     int weight;
     int degreeIn;
     int degreeOut;
-    Node* nextNode;
-    Edge* firstEdge;
+    Node *nextNode;
+    Edge *firstEdge;
 };
-
 
 class Graph {
    public:
@@ -96,7 +93,7 @@ class Graph {
     Graph(int inferiorLimit, int upperLimit);
 
     ~Graph() {
-        for (auto & edge:  this->vectorOfEdges) {
+        for (auto &edge : this->vectorOfEdges) {
             delete edge;
         }
         delete this->firstNode;
@@ -135,15 +132,14 @@ class Graph {
 
     void criaArestas();
 
-    vector<Graph *> guloso(vector<pair<int, int>> limiteClusters, float *result, float semente);
+    vector<Graph *> guloso(vector<pair<int, int>> limiteClusters, float *result);
     vector<Graph *> gulosoRandomizado(vector<pair<int, int>> limitClusters, float *result, float alfa);
     void algGulosoRandAdapt(vector<pair<int, int>> limitClusters);
     void algGuloso(vector<pair<int, int>> limitClusters);
     void algGulosoReativo(vector<pair<int, int>> limitClusters);
-    float qualidadeSolucao(float resultadoObtido);
 
     void imprimeCluster(vector<Graph *> solucao, int option, float result);
-    void output(string outputFileName, vector<Graph *> solucao, float qualidadeSolucao);
+    void output(vector<Graph *> solucao, float qualidadeSolucao);
     void printNodes();
     void printNodes2();
 
